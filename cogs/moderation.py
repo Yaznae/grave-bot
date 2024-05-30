@@ -112,8 +112,15 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        if self.role_cache[m.name]:
-            emb.description = f"{ctx.author}: restoring **roles** for {m.mention} ..."
+        try:
+            m_roles = self.role_cache[m.name]
+        except KeyError:
+            emb.description = f"{ctx.author.mention}: {m.mention} has no **cached roles** ."
+            await ctx.send(embed=emb)
+            return
+
+        if m_roles:
+            emb.description = f"{ctx.author.mention}: restoring **roles** for {m.mention} ..."
             msg = await ctx.send(embed=emb)
             for r in self.role_cache[m.name]:
                 await m.add_roles(r)
