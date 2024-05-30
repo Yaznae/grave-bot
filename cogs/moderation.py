@@ -44,7 +44,12 @@ class Moderation(Cog):
     async def on_member_remove(self, member):
         if member.roles:
             roles = [r for r in member.roles if r.name != "@everyone"]
-            self.role_cache.update({ member.name: roles })
+            try:
+                self.role_cache[ctx.guild.id].update({ member.name: roles })
+            except KeyError:
+                self.role_cache.update({ ctx.guild.id: { member.name: roles } })
+
+            print(self.role_cache)
         else:
             return
 
@@ -93,12 +98,18 @@ class Moderation(Cog):
     @cooldown(1, 3, BucketType.user)
     @has_guild_permissions(manage_roles=True)
     async def role_help(self, ctx):
+
+        try:
+            prefix = self.config['custom_prefix'][ctx.guild.id]
+        except:
+            prefix = self.config['prefix']
+
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='role command help:')
         role_commands = [c for c in self.role.commands]
         commands_list = ''
         for rc in role_commands:
-            commands_list += f"`{self.config['prefix']}{rc.qualified_name} {rc.signature}`\n"
+            commands_list += f"`{prefix}{rc.qualified_name} {rc.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
         await ctx.send(embed=emb)
@@ -113,7 +124,8 @@ class Moderation(Cog):
         emb = Embed(color=0x2b2d31)
 
         try:
-            m_roles = self.role_cache[m.name]
+            s_roles = self.role_cache[ctx.guild.id]
+            m_roles = s_roles[m.name]
         except KeyError:
             emb.description = f"{ctx.author.mention}: {m.mention} has no **cached roles** ."
             await ctx.send(embed=emb)
@@ -122,11 +134,11 @@ class Moderation(Cog):
         if m_roles:
             emb.description = f"{ctx.author.mention}: restoring **roles** for {m.mention} ..."
             msg = await ctx.send(embed=emb)
-            for r in self.role_cache[m.name]:
+            for r in self.role_cache[ctx.guild.id][m.name]:
                 await m.add_roles(r)
             emb.description = f"{ctx.author.mention}: **restored** the following **roles** for {m.mention}:\n<@&{'>, <@&'.join([str(r.id) for r in self.role_cache[m.name]])}>"
             await msg.edit(embed=emb)
-            self.role_cache.pop(m.name)
+            self.role_cache[ctx.guild.id].pop(m.name)
         else:
             print('no')
 
@@ -213,11 +225,17 @@ class Moderation(Cog):
     @has_guild_permissions(manage_roles=True, manage_guild=True)
     async def bots(self, ctx):
         if ctx.invoked_subcommand is None:
+
+            try:
+                prefix = self.config['custom_prefix'][ctx.guild.id]
+            except:
+                prefix = self.config['prefix']
+
             emb = Embed(color=0x2b2d31)
             emb.set_author(name='command help:')
             emb.description = "manipulate **roles** for all **bots** ."
-            emb.add_field(name='usage :', value=f"`{self.config['prefix']}role bots add [role]`\n`{self.config['prefix']}role bots remove [role]`", inline=False)
-            emb.add_field(name='example :', value=f"`{self.config['prefix']}role bots add sped`\n`{self.config['prefix']}role bots remove sped`", inline=False)
+            emb.add_field(name='usage :', value=f"`{prefix}role bots add [role]`\n`{prefix}role bots remove [role]`", inline=False)
+            emb.add_field(name='example :', value=f"`{prefix}role bots add sped`\n`{prefix}role bots remove sped`", inline=False)
             await ctx.send(embed=emb)
 
     @bots.command(name='add', aliases=['give'], description="adds a **role** to all bots .")
@@ -284,10 +302,16 @@ class Moderation(Cog):
     @has_guild_permissions(manage_roles=True, manage_guild=True)
     async def humans(self, ctx):
         if ctx.invoked_subcommand is None:
+
+            try:
+                prefix = self.config['custom_prefix'][ctx.guild.id]
+            except:
+                prefix = self.config['prefix']
+
             emb = Embed(color=0x2b2d31)
             emb.set_author(name='command help:')
-            emb.add_field(name='usage :', value=f"`{self.config['prefix']}role humans add [role]`\n`{self.config['prefix']}role humans remove [role]`", inline=False)
-            emb.add_field(name='example :', value=f"`{self.config['prefix']}role humans add sped`\n`{self.config['prefix']}role humans remove sped`", inline=False)
+            emb.add_field(name='usage :', value=f"`{prefix}role humans add [role]`\n`{prefix}role humans remove [role]`", inline=False)
+            emb.add_field(name='example :', value=f"`{prefix}role humans add sped`\n`{prefix}role humans remove sped`", inline=False)
             await ctx.send(embed=emb)
 
     @humans.command(name='add', aliases=['give'], description="adds a **role** to all humans .")
@@ -731,12 +755,18 @@ class Moderation(Cog):
     @cooldown(1, 3, BucketType.user)
     @has_guild_permissions(manage_roles=True)
     async def lock_help(self, ctx):
+
+        try:
+            prefix = self.config['custom_prefix'][ctx.guild.id]
+        except:
+            prefix = self.config['prefix']
+
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='lock command help:')
         lock_commands = [c for c in self.lock_channel.commands]
         commands_list = ''
         for lc in lock_commands:
-            commands_list += f"`{self.config['prefix']}{lc.qualified_name} {lc.signature}`\n"
+            commands_list += f"`{prefix}{lc.qualified_name} {lc.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
         await ctx.send(embed=emb)
@@ -802,12 +832,18 @@ class Moderation(Cog):
     @cooldown(1, 3, BucketType.user)
     @has_guild_permissions(manage_roles=True)
     async def li_help(self, ctx):
+
+        try:
+            prefix = self.config['custom_prefix'][ctx.guild.id]
+        except:
+            prefix = self.config['prefix']
+
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='lock ignore command help:')
         li_commands = [c for c in self.lock_ignore_group.commands]
         commands_list = ''
         for lic in li_commands:
-            commands_list += f"`{self.config['prefix']}{lic.qualified_name} {lic.signature}`\n"
+            commands_list += f"`{prefix}{lic.qualified_name} {lic.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
         await ctx.send(embed=emb)
@@ -966,10 +1002,16 @@ class Moderation(Cog):
     @has_guild_permissions(manage_messages=True)
     @cooldown(1, 2, BucketType.user)
     async def clear_bots(self, ctx, amount: Optional[int]):
+
+        try:
+            prefix = self.config['custom_prefix'][ctx.guild.id]
+        except:
+            prefix = self.config['prefix']
+
         if amount:
-            await ctx.channel.purge(limit=amount, check=lambda m: m.author.bot or m.content.startswith(self.config['prefix']))
+            await ctx.channel.purge(limit=amount, check=lambda m: m.author.bot or m.content.startswith(prefix))
         else:
-            await ctx.channel.purge(check=lambda m: m.author.bot or m.content.startswith(self.config['prefix']))
+            await ctx.channel.purge(check=lambda m: m.author.bot or m.content.startswith(prefix))
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))

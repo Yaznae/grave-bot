@@ -16,8 +16,14 @@ class Administrator(Cog):
     @guild_only()
     async def prefix(self, ctx):
         if ctx.invoked_subcommand is None:
+
+            try:
+                prefix = self.config['custom_prefix'][str(ctx.guild.id)]
+            except:
+                prefix = self.config['prefix']
+
             emb = Embed(color=0x2b2d31)
-            emb.description = f"**server prefix**: `{self.config['prefix']}`"
+            emb.description = f"**server prefix**: `{prefix}`"
             await ctx.send(embed=emb)
 
     @prefix.command(name='help', description="shows this prompt .")
@@ -27,10 +33,16 @@ class Administrator(Cog):
     async def prefix_help(self, ctx):
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='prefix command help:')
+
+        try:
+            prefix = self.config['custom_prefix'][str(ctx.guild.id)]
+        except:
+            prefix = self.config['prefix']
+
         prefix_commands = [c for c in self.prefix.commands]
         commands_list = ''
         for pc in prefix_commands:
-            commands_list += f"`{self.config['prefix']}{pc.qualified_name} {pc.signature}`\n"
+            commands_list += f"`{prefix}{pc.qualified_name} {pc.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
         await ctx.send(embed=emb)
@@ -40,11 +52,11 @@ class Administrator(Cog):
     @guild_only()
     @cooldown(1, 2, BucketType.user)
     async def set_prefix(self, ctx, prefix: str):
-        self.config['prefix'] = prefix
+        self.config["custom_prefix"].update({ str(ctx.guild.id): prefix })
         with open('./config.json', 'w') as f:
             json.dump(self.config, f, indent=4)
         emb = Embed(color=0x2b2d31)
-        emb.description = f"{ctx.author.mention}: set **server prefix** to: `{self.config['prefix']}`"
+        emb.description = f"{ctx.author.mention}: set **server prefix** to: `{self.config['custom_prefix'][str(ctx.guild.id)]}`"
         await ctx.send(embed=emb)
 
     @group(description=f"manipulates **server details** .")
@@ -52,12 +64,18 @@ class Administrator(Cog):
     @guild_only()
     async def set(self, ctx):
         if ctx.invoked_subcommand is None:
+
+            try:
+                prefix = self.config['custom_prefix'][str(ctx.guild.id)]
+            except:
+                prefix = self.config['prefix']
+
             emb = Embed(color=0x2b2d31)
             emb.set_author(name='set command help:')
             set_commands = [c for c in self.set.commands]
             commands_list = ''
             for sc in set_commands:
-                commands_list += f"`{self.config['prefix']}{sc.qualified_name} {sc.signature}`\n"
+                commands_list += f"`{prefix}{sc.qualified_name} {sc.signature}`\n"
             emb.add_field(name='available commands:', value=commands_list)
             emb.description = f"*{ctx.command.description}*"
             await ctx.send(embed=emb)
@@ -66,12 +84,18 @@ class Administrator(Cog):
     @guild_only()
     @has_guild_permissions(manage_guild=True)
     async def set_help(self, ctx):
+
+        try:
+            prefix = self.config['custom_prefix'][str(ctx.guild.id)]
+        except:
+            prefix = self.config['prefix']
+
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='role command help:')
         set_commands = [c for c in self.set.commands]
         commands_list = ''
         for sc in set_commands:
-            commands_list += f"`{self.config['prefix']}{sc.qualified_name} {sc.signature}`\n"
+            commands_list += f"`{prefix}{sc.qualified_name} {sc.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
         await ctx.send(embed=emb)
