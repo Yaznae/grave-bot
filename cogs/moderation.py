@@ -45,9 +45,9 @@ class Moderation(Cog):
         if member.roles:
             roles = [r for r in member.roles if r.name != "@everyone"]
             try:
-                self.role_cache[ctx.guild.id].update({ member.name: roles })
+                self.role_cache[member.guild.id].update({ member.name: roles })
             except KeyError:
-                self.role_cache.update({ ctx.guild.id: { member.name: roles } })
+                self.role_cache.update({ member.guild.id: { member.name: roles } })
 
             print(self.role_cache)
         else:
