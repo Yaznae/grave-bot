@@ -55,7 +55,7 @@ async def on_command_error(ctx, err):
         emb.set_author(name='command help:')
         emb.description = f"*{ctx.command.description}*"
         emb.add_field(name='usage :', value=f"`{prefix}{ctx.command.qualified_name} {ctx.command.signature}`", inline=False)
-        usage = ctx.command.signature.replace('[member]', '@zt').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@zt').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m')
+        usage = ctx.command.signature.replace('[member]', '@zt').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@zt').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@zt').replace('<user>', '@zt')
         emb.add_field(name='example :', value=f"`{prefix}{ctx.command.qualified_name} {usage}`", inline=False)
         await ctx.send(embed=emb)
     elif hasattr(err, 'original') and isinstance(err.original, TypeError):
@@ -63,7 +63,7 @@ async def on_command_error(ctx, err):
         emb.set_author(name='command help:')
         emb.description = f"*{ctx.command.description}*"
         emb.add_field(name='usage :', value=f"`{prefix}{ctx.command.qualified_name} {ctx.command.signature}`", inline=False)
-        usage = ctx.command.signature.replace('[member]', '@zt').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@zt').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m')
+        usage = ctx.command.signature.replace('[member]', '@zt').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@zt').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@zt').replace('<user>', '@zt')
         emb.add_field(name='example :', value=f"`{prefix}{ctx.command.qualified_name} {usage}`", inline=False)
         await ctx.send(embed=emb)
     elif isinstance(err, RoleNotFound):
@@ -115,16 +115,18 @@ async def help(ctx, command: Optional[str]):
             emb.description += f"\n*use* `{prefix}{c.name} help` *for more information .*"
             emb.add_field(name=f"subcommands:", value=f"`{'` ⋅ `'.join(cmds)}`")
         else:
-            usage = c.signature.replace('[member]', '@zt').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@zt').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m')
+            usage = c.signature.replace('[member]', '@zt').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@zt').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@zt').replace('<user>', '@zt')
             if c.signature:
                 emb.add_field(name=f"usage :", value=f"`{prefix}{c.name} {c.signature}`", inline=False)
                 emb.add_field(name=f"example :", value=f"`{prefix}{c.name} {usage}`", inline=False)
             else:
                 emb.add_field(name=f"usage :", value=f"`{prefix}{c.name}`", inline=False)
     else:
+        i = 0
         emb.set_author(name='commands list:')
         fields = []
         for cog in bot.cogs:
+            i += 1
             cmds = [cmd.name for cmd in bot.cogs[cog].get_commands()]
             cmds.sort()
             emb.description = f"*use* `{prefix}help [command]` *for more information .*"
