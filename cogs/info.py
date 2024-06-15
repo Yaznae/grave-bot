@@ -4,7 +4,6 @@ from discord import Embed, Button, ButtonStyle, Interaction
 from typing import Optional
 from discord.ui import View, button
 from discord.utils import get
-import requests
 import os
 
 class Info(Cog):
