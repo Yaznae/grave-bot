@@ -2,6 +2,7 @@ import json
 import aiohttp
 import os
 from typing import Optional
+from pymongo import MongoClient
 from discord import Embed
 from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType
 
@@ -10,6 +11,7 @@ class Administrator(Cog):
         with open('./config.json') as f:
             config = json.load(f)
         self.bot = bot
+        self.mongo = MongoClient(os.environ['MONGO_URI']).get_database('info')
         self.config = config
 
     @group(description="manipulate the bot prefix .")
@@ -52,6 +54,12 @@ class Administrator(Cog):
     @guild_only()
     @cooldown(1, 2, BucketType.user)
     async def set_prefix(self, ctx, prefix: str):
+        check = self.mongo.get_collection('prefix').find_one({ "guild_id": f"{ctx.guild.id}" })
+        if check:
+            self.mongo.get_collection('prefix').find_one_and_update({ "guild_id": f"{ctx.guild.id}" }, { "$set": { "prefix": prefix } })
+        else:
+            self.mongo.get_collection('prefix').insert_one({ "guild_id": f"{ctx.guild.id}", "prefix": prefix })
+
         self.config["custom_prefix"].update({ str(ctx.guild.id): prefix })
         with open('./config.json', 'w') as f:
             json.dump(self.config, f, indent=4)

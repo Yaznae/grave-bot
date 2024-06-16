@@ -1,6 +1,7 @@
 import os
 import json
 from keep_alive import keep_alive
+from pymongo import MongoClient
 from typing import Optional
 from dotenv import load_dotenv
 from colorama import Fore
@@ -28,6 +29,14 @@ bot = Bot(command_prefix=get_prefix, intents=intents, help_command=None)
 
 @bot.event
 async def on_ready():
+    c = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('prefix').find({})
+    with open('./config.json') as f:
+        config = json.load(f)
+    for d in c:
+        config["custom_prefix"].update({ d["guild_id"]: d["prefix"] })
+    with open('./config.json', 'w') as f:
+        json.dump(config, f)
+
     for cog in cogs:
         await bot.load_extension(f"cogs.{cog}")
     print(f"  {Fore.LIGHTCYAN_EX}#{x} {b}loaded {Fore.LIGHTCYAN_EX}{len(cogs)}{Fore.RESET} cogs{x}")
