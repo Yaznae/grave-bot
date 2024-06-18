@@ -29,6 +29,27 @@ class LastFM(Cog):
             else:
                 m = ctx.author
 
+    @lastfm_group.command(name='help', description="shows this prompt .")
+    @guild_only()
+    @cooldown(1, 3, BucketType.user)
+    @has_guild_permissions(manage_roles=True)
+    async def lastfm_help(self, ctx):
+
+        try:
+            prefix = self.config['custom_prefix'][ctx.guild.id]
+        except:
+            prefix = self.config['prefix']
+
+        emb = Embed(color=0x2b2d31)
+        emb.set_author(name='lastfm command help:')
+        lfm_commands = [c for c in self.lastfm_group.commands]
+        commands_list = ''
+        for lfc in lfm_commands:
+            commands_list += f"`{prefix}{lfcc.qualified_name} {lfc.signature}`\n"
+        emb.add_field(name='available commands:', value=commands_list)
+        emb.description = f"*{ctx.command.parent.description}*"
+        await ctx.send(embed=emb)
+
     @lastfm_group.command(name="login", description="log into your **last.fm** account .")
     @guild_only()
     @cooldown(1, 2, BucketType.user)
