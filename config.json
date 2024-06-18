@@ -1,8 +1,1 @@
-{
-    "prefix": "$",
-    "custom_prefix": {
-        "1243357047257436221": ";"
-    },
-    "lock_role": 1245149652781633663,
-    "lock_ignore": []
-}
+{"prefix": "$", "custom_prefix": {"1243357047257436221": ";"}, "lock_role": 1245149652781633663, "lock_ignore": []}

@@ -90,7 +90,7 @@ class LastFM(Cog):
     @command(name="nowplaying", aliases=["np"], description=f"shows your **current playing** track .")
     @guild_only()
     @cooldown(1, 2, BucketType.user)
-    async def lastfm_nowplaying(self, ctx, member: Optional[str]):
+    async def lastfm_nowplaying_indp(self, ctx, member: Optional[str]):
         m_conv = MemberConverter()
         emb = Embed(color=0x2b2d31)
 

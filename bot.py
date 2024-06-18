@@ -29,11 +29,14 @@ bot = Bot(command_prefix=get_prefix, intents=intents, help_command=None)
 
 @bot.event
 async def on_ready():
-    c = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('prefix').find({})
+    c = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('servers').find({})
     with open('./config.json') as f:
         config = json.load(f)
     for d in c:
-        config["custom_prefix"].update({ d["guild_id"]: d["prefix"] })
+        try:
+            config["custom_prefix"].update({ d["guild_id"]: d["prefix"] })
+        except:
+            pass
     with open('./config.json', 'w') as f:
         json.dump(config, f)
 
@@ -154,5 +157,4 @@ async def reload(ctx, cog):
         emb.description = f"{ctx.author.mention}: `{cog}.py` does not exist ."
     await ctx.send(embed=emb)
 
-keep_alive()
 bot.run(os.environ['TOKEN'])

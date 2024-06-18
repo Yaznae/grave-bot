@@ -994,14 +994,30 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(manage_messages=True)
     @cooldown(1, 2, BucketType.user)
-    async def clear_messages(self, ctx, amount: int):
-        await ctx.channel.purge(limit=amount)
+    async def clear_messages(self, ctx, option: Optional[str], amount: Optional[int]):
+        m_conv = MemberConverter()
+        emb = Embed(color=0x2b2d31)
+
+        try:
+            if option:
+                a = int(option)
+                await ctx.channel.purge(limit=a, bulk=True)
+            else:
+                await ctx.channel.purge(bulk=True)
+        except ValueError:
+            m = await m_conv.convert(ctx, option)
+            if amount:
+                a = amount
+                await ctx.channel.purge(limit=a, check=lambda msg: msg.author == m, bulk=True)
+            else:
+                await ctx.channel.purge(check=lambda msg: msg.author == m, bulk=True)
 
     @command(name='botpurge', aliases=['botclear', 'bc'], description="deletes **bot messages** from the channel .")
     @guild_only()
     @has_guild_permissions(manage_messages=True)
     @cooldown(1, 2, BucketType.user)
     async def clear_bots(self, ctx, amount: Optional[int]):
+        await ctx.message.delete()
 
         try:
             prefix = self.config['custom_prefix'][ctx.guild.id]

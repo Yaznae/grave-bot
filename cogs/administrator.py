@@ -5,6 +5,7 @@ from typing import Optional
 from pymongo import MongoClient
 from discord import Embed
 from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType
+from discord.ext.commands import TextChannelConverter
 
 class Administrator(Cog):
     def __init__(self, bot):
@@ -54,11 +55,11 @@ class Administrator(Cog):
     @guild_only()
     @cooldown(1, 2, BucketType.user)
     async def set_prefix(self, ctx, prefix: str):
-        check = self.mongo.get_collection('prefix').find_one({ "guild_id": f"{ctx.guild.id}" })
+        check = self.mongo.get_collection('servers').find_one({ "guild_id": f"{ctx.guild.id}" })
         if check:
-            self.mongo.get_collection('prefix').find_one_and_update({ "guild_id": f"{ctx.guild.id}" }, { "$set": { "prefix": prefix } })
+            self.mongo.get_collection('servers').find_one_and_update({ "guild_id": f"{ctx.guild.id}" }, { "$set": { "prefix": prefix } })
         else:
-            self.mongo.get_collection('prefix').insert_one({ "guild_id": f"{ctx.guild.id}", "prefix": prefix })
+            self.mongo.get_collection('servers').insert_one({ "guild_id": f"{ctx.guild.id}", "prefix": prefix })
 
         self.config["custom_prefix"].update({ str(ctx.guild.id): prefix })
         with open('./config.json', 'w') as f:
@@ -106,6 +107,50 @@ class Administrator(Cog):
             commands_list += f"`{prefix}{sc.qualified_name} {sc.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
+        await ctx.send(embed=emb)
+
+    @set.command(name='welcomechannel', aliases=['welcome', 'wc'], description="changes **welcoming** channel .")
+    @has_guild_permissions(administrator=True)
+    @guild_only()
+    @cooldown(1, 4, BucketType.user)
+    async def set_welcome_channel(self, ctx, channel: Optional[str]):
+        if not channel or channel.lower() == 'none':
+            c_id = 0
+            emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: removed **welcome** channel .")
+        else:
+            c_conv = TextChannelConverter()
+            c = await c_conv.convert(ctx, channel)
+            c_id = c.id
+            emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: changed **welcome channel** to {c.mention} .")
+
+        check = self.mongo.get_collection('servers').find_one({ "guild_id": f"{ctx.guild.id}" })
+        if check:
+            self.mongo.get_collection('servers').find_one_and_update({ "guild_id": f"{ctx.guild.id}" }, { "$set": { "welcome_channel": f"{c_id}" } })
+        else:
+            self.mongo.get_collection('servers').insert_one({ "guild_id": f"{ctx.guild.id}", "welcome_channel": f"{c_id}" })
+
+        await ctx.send(embed=emb)
+
+    @set.command(name='leavechannel', aliases=['leave', 'lc'], description="changes **leaving** channel .")
+    @has_guild_permissions(administrator=True)
+    @guild_only()
+    @cooldown(1, 4, BucketType.user)
+    async def set_leave_channel(self, ctx, channel: Optional[str]):
+        if not channel or channel.lower() == 'none':
+            c_id = 0
+            emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: removed **leave** channel .")
+        else:
+            c_conv = TextChannelConverter()
+            c = await c_conv.convert(ctx, channel)
+            c_id = c.id
+            emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: changed **leave channel** to {c.mention} .")
+
+        check = self.mongo.get_collection('servers').find_one({ "guild_id": f"{ctx.guild.id}" })
+        if check:
+            self.mongo.get_collection('servers').find_one_and_update({ "guild_id": f"{ctx.guild.id}" }, { "$set": { "leave_channel": f"{c_id}" } })
+        else:
+            self.mongo.get_collection('servers').insert_one({ "guild_id": f"{ctx.guild.id}", "leave_channel": f"{c_id}" })
+
         await ctx.send(embed=emb)
 
     @set.command(name='icon', description="changes **server icon** .")
