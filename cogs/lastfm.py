@@ -32,7 +32,6 @@ class LastFM(Cog):
     @lastfm_group.command(name='help', description="shows this prompt .")
     @guild_only()
     @cooldown(1, 3, BucketType.user)
-    @has_guild_permissions(manage_roles=True)
     async def lastfm_help(self, ctx):
 
         try:
