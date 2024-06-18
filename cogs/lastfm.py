@@ -1,5 +1,6 @@
 from discord.ext.commands import command, Cog, group, guild_only, cooldown, BucketType, MemberConverter
 from discord import Embed
+from urllib.parse import quote
 from pymongo import MongoClient
 from typing import Optional
 import requests
@@ -74,11 +75,49 @@ class LastFM(Cog):
         msg = await ctx.send(embed=emb)
         lfm_user = check["lastfm_user"]
         lf_info = requests.get(f"http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user={lfm_user}&api_key={self.lfm_api}&format=json").json()["user"]
+        rt_info = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={lfm_user}&api_key={self.lfm_api}&limit=1&format=json").json()["recenttracks"]["track"][0]
+        t_info = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=track.getinfo&track={quote(rt_info['name'])}&artist={quote(rt_info['artist']['#text'])}&user={lfm_user}&api_key={self.lfm_api}&format=json").json()
+        a_name = rt_info["artist"]['#text']
+        a_info = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={quote(a_name)}&api_key={self.lfm_api}&format=json").json()
+        emb = Embed(color=0x2b2d31)
+        emb.set_author(name=lfm_user, icon_url=lf_info["image"][0]["#text"], url=lf_info["url"])
+        emb.add_field(name="track", value=f"[{rt_info['name']}]({rt_info['url']})", inline=True)
+        emb.add_field(name="artist", value=f"[{a_name}]({a_info['artist']['url']})", inline=True)
+        emb.set_footer(text=f"album: {rt_info['album']['#text']} ⋅ playcount: {t_info['track']['userplaycount']}")
+        emb.set_thumbnail(url=rt_info["image"][3]["#text"])
+        await msg.edit(embed=emb)
+
+    @command(name="nowplaying", aliases=["np"], description=f"shows your **current playing** track .")
+    @guild_only()
+    @cooldown(1, 2, BucketType.user)
+    async def lastfm_nowplaying_indp(self, ctx, member: Optional[str]):
+        m_conv = MemberConverter()
+        emb = Embed(color=0x2b2d31)
+
+        if member:
+            m = await m_conv.convert(ctx, member)
+        else:
+            m = ctx.author
+
+            
+        async with ctx.channel.typing():
+            check = await self.get_lf_user(m.name)
+            if not check:
+                emb.description = f"{m.mention} has not **logged in** to last.fm yet ."
+                await ctx.send(embed=emb)
+                return
+
+        emb.description = f"finding **last played** track for {m.mention} ..."
+        msg = await ctx.send(embed=emb)
+        lfm_user = check["lastfm_user"]
+        lf_info = requests.get(f"http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user={lfm_user}&api_key={self.lfm_api}&format=json").json()["user"]
         t_info = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={lfm_user}&api_key={self.lfm_api}&limit=1&format=json").json()["recenttracks"]["track"][0]
+        a_name = t_info["artist"]['#text']
+        a_info = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={a_name}&api_key={self.lfm_api}&format=json").json()
         emb = Embed(color=0x2b2d31)
         emb.set_author(name=lfm_user, icon_url=lf_info["image"][0]["#text"], url=lf_info["url"])
         emb.add_field(name="track", value=f"[{t_info['name']}]({t_info['url']})", inline=True)
-        emb.add_field(name="artist", value=f"{t_info['artist']['#text']}", inline=True)
+        emb.add_field(name="artist", value=f"[{a_name}]({a_info['artist']['url']})", inline=True)
         emb.set_footer(text=f"album: {t_info['album']['#text']}")
         emb.set_thumbnail(url=t_info["image"][3]["#text"])
         await msg.edit(embed=emb)
