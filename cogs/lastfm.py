@@ -9,9 +9,12 @@ import os
 
 class LastFM(Cog):
     def __init__(self, bot):
+        with open('./config.json') as f:
+            config = json.load(f)
         self.bot = bot
         self.mongo = MongoClient(os.environ["MONGO_URI"]).get_database('lastfm')
         self.lfm_api = os.environ["LASTFM_API"]
+        self.config = config
         
     async def get_lf_user(self, username):
         c = self.mongo.get_collection('users')
@@ -44,7 +47,7 @@ class LastFM(Cog):
         lfm_commands = [c for c in self.lastfm_group.commands]
         commands_list = ''
         for lfc in lfm_commands:
-            commands_list += f"`{prefix}{lfcc.qualified_name} {lfc.signature}`\n"
+            commands_list += f"`{prefix}{lfc.qualified_name} {lfc.signature}`\n"
         emb.add_field(name='available commands:', value=commands_list)
         emb.description = f"*{ctx.command.parent.description}*"
         await ctx.send(embed=emb)
