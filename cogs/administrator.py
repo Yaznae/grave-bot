@@ -193,7 +193,25 @@ class Administrator(Cog):
     @Cog.listener()
     async def on_guild_join(self, guild):
         c = self.bot.get_channel(1253493678769569915)
-        await c.send(f"joined {guild.name} ({guild.id})")
+        g = guild
+        emb = Embed(color=0x2b2d31)
+        emb.set_author(name=f"{g.name} | guild id: {g.id}")
+        emb.description = f"**created on:** <t:{math.ceil(g.created_at.timestamp())}:D> (<t:{math.ceil(g.created_at.timestamp())}:R>)"
+        emb.add_field(name="owner :", value=f"**name:**\n {g.owner.display_name} (`@{g.owner.name}`)\n**id:** `{g.owner_id}`", inline=True)
+        emb.add_field(name="members :", value=f"**bots:** `{len([b for b in g.members if b.bot])}`\n**humans:** `{len([h for h in g.members if not h.bot])}`\n**total:** `{len(g.members)}`", inline=True)
+        icon = f"[[guild icon]]({g.icon.url})" if g.icon else "`None`"
+        banner = f"[[guild banner]]({g.banner.url})" if g.banner else "`None`"
+        splash = f"[[invite splash]]({g.splash.url})" if g.splash else "`None`"
+        emb.add_field(name="layout :", value=f"**icon:** {icon}\n**banner:** {banner}\n**splash:** {splash}", inline=True)
+        emb.add_field(name="channels :", value=f"**text:** `{len(g.text_channels)}`\n**voice:** `{len(g.voice_channels)}`\n**total:** `{len(g.text_channels) + len(g.voice_channels)}`", inline=True)
+        emb.add_field(name="counts :", value=f"**roles:** `{len(g.roles)}`\n**emojis:** `{len(g.emojis)}`\n**boosters:** `{len(g.premium_subscribers)}`", inline=True)
+        vanity = f"`/{g.vanity_url_code}`" if g.vanity_url else "`None`"
+        emb.add_field(name="other info :", value=f"**vanity:** {vanity}\n**locale:** `{g.preferred_locale}`\n**booster level:** `{g.premium_tier}`", inline=True)
+        features = f"`{'` ⋅ `'.join(g.features)}`" if len(g.features) > 1 else "`None`"
+        emb.add_field(name="features :", value=f"{features}", inline=False)
+        if g.icon:
+            emb.set_thumbnail(url=g.icon.url)
+        await c.send(embed=emb)
 
     @group(name="embed", description="manipulate **embeds** .", invoke_without_command=True)
     @guild_only()
