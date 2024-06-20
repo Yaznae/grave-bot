@@ -21,7 +21,7 @@ class LastFM(Cog):
         r = c.find_one({ "username": username })
         return r
 
-    @group(name="lastfm", aliases=["lf"], description="use **last.fm** related commands .", invoke_without_command=True)
+    @group(name="lastfm", aliases=["lf", "fm", "lfm"], description="use **last.fm** related commands .", invoke_without_command=True)
     @guild_only()
     @cooldown(1, 2, BucketType.user)
     async def lastfm_group(self, ctx, member: Optional[str]):
