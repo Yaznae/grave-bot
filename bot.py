@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from typing import Optional
 from dotenv import load_dotenv
 from colorama import Fore
-from discord import Intents, Embed, Streaming
+from discord import Intents, Embed, Activity, ActivityType, Status
 from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound
 b = '\033[1m'
 x = '\033[0m'
@@ -43,7 +43,7 @@ async def on_ready():
     for cog in cogs:
         await bot.load_extension(f"cogs.{cog}")
 
-    await bot.change_presence(activity=Streaming(name="$help", url="https://www.twitch.tv/twitch"))
+    await bot.change_presence(status=Status.idle, activity=Activity(type=ActivityType.watching, name="$help"))
     print(f"  {Fore.LIGHTCYAN_EX}#{x} {b}loaded {Fore.LIGHTCYAN_EX}{len(cogs)}{Fore.RESET} cogs{x}")
     print(f"  {Fore.MAGENTA}#{x} {b}logged in as {Fore.MAGENTA}{bot.user.name}{x}")
 
