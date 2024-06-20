@@ -110,6 +110,13 @@ async def on_command_error(ctx, err):
 
     print(err)
 
+@bot.command(name="leave")
+async def leave_server(ctx, server_id):
+    owners = [931514266815725599, 1191209067335651431]
+    if ctx.author.id not in owners: return
+    g = bot.get_guild(server_id)
+    await g.leave()
+
 @bot.command()
 async def help(ctx, command: Optional[str]):
     with open('./config.json') as f:
