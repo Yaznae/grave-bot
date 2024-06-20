@@ -190,6 +190,11 @@ class Administrator(Cog):
                         welcome_embed = Embed.from_dict(embed["embed"])
                         await c.send(embed=welcome_embed)
 
+    @Cog.listener()
+    async def on_guild_join(self, guild):
+        c = self.bot.get_channel(1253493678769569915)
+        await c.send(f"joined {guild.name} ({guild.id})")
+
     @group(name="embed", description="manipulate **embeds** .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
