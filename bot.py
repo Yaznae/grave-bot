@@ -116,6 +116,7 @@ async def leave_server(ctx, server_id):
     if ctx.author.id not in owners: return
     g = bot.get_guild(server_id)
     await g.leave()
+    await ctx.message.react("✅")
 
 @bot.command()
 async def help(ctx, command: Optional[str]):
