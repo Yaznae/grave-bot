@@ -132,7 +132,7 @@ class Administrator(Cog):
                 await c.send(embed=welcome_embed)
 
     @Cog.listener()
-    async def on_member_update(before, after):
+    async def on_member_update(self, before, after):
         for r in after.roles:
             if r.is_premium_subscriber():
                 check = self.mongo.get_collection('servers').find_one({ "guild_id": f"{after.guild.id}" })
@@ -189,10 +189,6 @@ class Administrator(Cog):
                     except:
                         welcome_embed = Embed.from_dict(embed["embed"])
                         await c.send(embed=welcome_embed)
-
-    @command(name="test")
-    async def test_join(self, ctx):
-        self.bot.dispatch("member_remove", ctx.author)
 
     @group(name="embed", description="manipulate **embeds** .", invoke_without_command=True)
     @guild_only()
