@@ -4,7 +4,9 @@ from discord import Embed, Button, ButtonStyle, Interaction
 from typing import Optional
 from discord.ui import View, button
 from discord.utils import get
+from pymongo import MongoClient
 import os
+import requests
 
 class Info(Cog):
     def __init__(self, bot):
@@ -19,9 +21,105 @@ class Info(Cog):
         else:
             u = ctx.author
 
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name=f"@{u.name} | user id: {u.id}")
-        emb.set_thumbnail(url=u.display_avatar.url)
+        async with ctx.channel.typing():
+            emb = Embed(color=0x2b2d31)
+            emb.set_author(name=f"@{u.name} | user id: {u.id}")
+            emb.set_thumbnail(url=u.display_avatar.url)
+            desc = ""
+
+            u = await self.bot.fetch_user(u.id)
+
+            if u.banner or u.accent_color:
+                desc += "<:nitro:1253734539927355473>"
+            if u.public_flags.hypesquad_bravery:
+                desc += "<:bravery:1253741810233376829>"
+            if u.public_flags.hypesquad_balance:
+                desc += "<:balance:1253742648951308389>"
+            if u.public_flags.hypesquad_brilliance:
+                desc += "<:brilliance:1253742487948886177>"
+            if u.public_flags.active_developer:
+                desc += "<:active_developer:1253742788290281564>"
+            if u.public_flags.early_supporter:
+                desc += "<:early_supporter:1253743729718857758>"
+            if u.public_flags.bug_hunter:
+                desc += "<:bughunter:1253743172790648913>"
+            if u.public_flags.bug_hunter_level_2:
+                desc += "<:bughunter_level2:1253743207662223481>"
+            if u.public_flags.discord_certified_moderator:
+                desc += "<:certified_moderator:1253743368295546971>"    
+            if ctx.guild.get_member(u.id) and ctx.guild.get_member(u.id).premium_since:
+                desc += "<:boost:1253734600547631177>"   
+            data = MongoClient(os.environ["MONGO_URI"]).get_database('lastfm').get_collection("users").find_one({ "username": u.name })
+            if data:
+                lfm_user = data["lastfm_user"]
+                r = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={lfm_user}&api_key={os.environ['LASTFM_API']}&limit=1&format=json").json()["recenttracks"]["track"][0]
+                try:
+                    if r["@attr"] and r["@attr"]["nowplaying"] == "true":
+                        desc += f"\n<:lastfm:1253735239424147517> listening to **[{r['name']}]({r['url']})** by **{r['artist']['#text']}**"
+                except:
+                    pass
+            if ctx.guild.get_member(u.id) and ctx.guild.get_member(u.id).voice:
+                vc = ctx.guild.get_member(u.id).voice.channel
+                in_vc = len(vc.members) - 1
+                desc += f"\n<:white_voice:1253752345511329993>  **in vc:** {vc.name} with {in_vc} others ."
+            emb.description = desc
+
+            dates_field = f"**created:** <t:{math.ceil(u.created_at.timestamp())}:F>"
+            if ctx.guild.get_member(u.id):
+                dates_field += f"\n**joined:** <t:{math.ceil(ctx.guild.get_member(u.id).joined_at.timestamp())}:F>"
+                if ctx.guild.get_member(u.id).premium_since:
+                    dates_field += f"\n**boosted:** <t:{math.ceil(ctx.guild.get_member(u.id).premium_since.timestamp())}:F>"
+            emb.add_field(name="dates :", value=dates_field, inline=True)
+
+            if ctx.guild.get_member(u.id) and len(ctx.guild.get_member(u.id).roles) > 0:
+                roles = [r.mention for r in ctx.guild.get_member(u.id).roles]
+                roles_field = " ⋅ ".join(list(reversed(roles))[:10])
+                if len(roles) > 10:
+                    roles_field += "..."
+                emb.add_field(name=f"`{len(roles)}` roles :", value=roles_field, inline=True)
+
+            layout_text = f"**avatar:** [[icon]]({u.display_avatar.url})"
+            if u.banner:
+                layout_text += f"\n**banner:** [[banner]]({u.banner.url})"
+            emb.add_field(name="profile :", value=layout_text, inline=True)
+
+
+
+            footer_text = ""
+            if ctx.guild.get_member(u.id):
+                perms = []
+                if ctx.guild.get_member(u.id).guild_permissions.administrator:
+                    perms.append("administrator")
+                if ctx.guild.get_member(u.id).guild_permissions.ban_members:
+                    perms.append("ban members")
+                if ctx.guild.get_member(u.id).guild_permissions.kick_members:
+                    perms.append("kick members")
+                if ctx.guild.get_member(u.id).guild_permissions.moderate_members:
+                    perms.append("moderate members")
+                if ctx.guild.get_member(u.id).guild_permissions.mute_members:
+                    perms.append("mute members")
+                if ctx.guild.get_member(u.id).guild_permissions.deafen_members:
+                    perms.append("deafen members")
+                if ctx.guild.get_member(u.id).guild_permissions.move_members:
+                    perms.append("move members")
+                if ctx.guild.get_member(u.id).guild_permissions.manage_channels:
+                    perms.append("manage channels")
+                if ctx.guild.get_member(u.id).guild_permissions.manage_guild:
+                    perms.append("manage guild")
+                if ctx.guild.get_member(u.id).guild_permissions.manage_roles:
+                    perms.append("manage roles")
+                if ctx.guild.get_member(u.id).guild_permissions.mention_everyone:
+                    perms.append("mention everyone")
+                
+                if len(perms) > 0:
+                    emb.add_field(name="key permissions :", value=f'`{"` ⋅ `".join(perms)}`')
+                
+                pos = sum(m.joined_at < ctx.guild.get_member(u.id).joined_at for m in ctx.guild.members if m.joined_at is not None)
+                footer_text += f"join position: {pos} ⋅ "
+            footer_text += f"mutual guilds: {len(u.mutual_guilds)}"
+            emb.set_footer(text=footer_text)
+
+        await ctx.send(embed=emb)
 
     @command(name="serverinfo", aliases=["sinfo", "si"], description="shows information about the guild .")
     @guild_only()
