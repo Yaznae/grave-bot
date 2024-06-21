@@ -106,6 +106,8 @@ async def on_command_error(ctx, err):
         await ctx.send(embed=emb)
     elif isinstance(err, CommandNotFound):
         pass
+    elif "Unknown Message" in str(err):
+        print('oops')
     else:
         print(err)
         emb = Embed(color=0x2b2d31)
