@@ -48,8 +48,6 @@ class Moderation(Cog):
                 self.role_cache[member.guild.id].update({ member.name: roles })
             except KeyError:
                 self.role_cache.update({ member.guild.id: { member.name: roles } })
-
-            print(self.role_cache)
         else:
             return
 
@@ -139,8 +137,6 @@ class Moderation(Cog):
             emb.description = f"{ctx.author.mention}: **restored** the following **roles** for {m.mention}:\n<@&{'>, <@&'.join([str(r.id) for r in self.role_cache[m.name]])}>"
             await msg.edit(embed=emb)
             self.role_cache[ctx.guild.id].pop(m.name)
-        else:
-            print('no')
 
     @role.command(name='mentionable', description="toggles **mentionability** of a role .")
     @guild_only()
@@ -694,6 +690,29 @@ class Moderation(Cog):
         else:
             await ctx.channel.set_permissions(m, send_messages=True)
             emb.description = f"{ctx.author.mention}: **unmuted** {m.mention} ."
+        await ctx.send(embed=emb)
+
+    @command(name='timeout', description="**mutes** a user .")
+    @guild_only()
+    @cooldown(1, 2, BucketType.user)
+    @has_guild_permissions(moderate_members=True)
+    async def mute_member(self, ctx, member, duration, *, reason: Optional[str]):
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        emb = Embed(color=0x2b2d31)
+
+        try:
+            d = hr.Time(duration)
+        except:
+            emb.description = f"{ctx.author.mention}: invalid **duration** ."
+            await ctx.send(embed=emb)
+            return
+
+        if not bool(m.is_timed_out()):
+            await m.timeout(timedelta(seconds=d.seconds))
+            emb.description = f"{ctx.author.mention}: **timed out** {m.mention} for **{d.to_humanreadable(style='short')}** ."
+        else:
+            emb.description = f"{ctx.author.mention}: {m.mention} is **already timed out** ."
         await ctx.send(embed=emb)
 
     @command(name='imute', description="removes **embed links** and **attach files** permissions from a user .")

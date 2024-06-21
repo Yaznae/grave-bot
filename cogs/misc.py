@@ -1,8 +1,10 @@
-from discord.ext.commands import command, Cog, guild_only, has_guild_permissions, cooldown, BucketType
+from discord.ext.commands import command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, group, PartialEmojiConverter
 from discord import Embed, AllowedMentions
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 import humanreadable as hr
+import aiohttp
+import io
 import math
 
 class Miscellaneous(Cog):
@@ -216,6 +218,91 @@ class Miscellaneous(Cog):
         self.reaction_snipes.update({ ctx.channel.id: [] })
         emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: cleared **snipe cache** for this channel .")
         await ctx.send(embed=emb, delete_after=3)
+
+    @group(name="emoji", aliases=["e"], description=f"manipulates **emojis** .", invoke_without_command=True)
+    @guild_only()
+    async def emoji_group(self, ctx, emoji):
+        emb = Embed(color=0x2b2d31)
+        e_conv = PartialEmojiConverter()
+
+        if ctx.invoked_subcommand is None:
+            try:
+                e = await e_conv.convert(ctx, emoji)
+                await ctx.send(e.url)
+            except:
+                try:
+                    cdn_fmt = "https://twemoji.maxcdn.com/v/latest/72x72/{codepoint:x}.png"
+                    url = cdn_fmt.format(codepoint=ord(str(emoji)))
+                    print(url)
+                    filename = "emoji.png"
+                except TypeError:
+                    emb.description = f"{ctx.author.mention}: invalid **emoji** ."
+                    await ctx.send(embed=emb)
+                    return
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url) as res:
+                            image = await res.read()
+                except Exception as e:
+                    emb.description = f"{ctx.author.mention}: invalid **emoji** ."
+                    await ctx.send(embed=emb)
+                    return
+
+                file = File(io.BytesIO(image), filename=filename)
+                await ctx.send(file=file)
+
+    @emoji_group.command(name="add", description=f"adds **emojis** to the server .")
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def add_emoji(self, ctx, emoji, *, name: Optional[str]):
+        emb = Embed(color=0x2b2d31)
+        e_conv = PartialEmojiConverter()
+        e = await e_conv.convert(ctx, emoji)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(e.url) as res:
+                png = await res.read()
+
+        try:
+            if name:
+                corrected_name = "_".join(name.split(" "))
+                emoji = await ctx.guild.create_custom_emoji(name=corrected_name, image=png)
+            else:
+                emoji = await ctx.guild.create_custom_emoji(name=e.name, image=png)
+        except Exception as e:
+            print(e)
+            emb.description = f"{ctx.author.mention}: couldn't **add** emoji ."
+            await ctx.send(embed=emb)
+            return
+
+        emb.description = f"{ctx.author.mention}: **added** {emoji} (`:{emoji.name}:`)"
+        await ctx.send(embed=emb)
+
+    @emoji_group.command(name="addmany", description=f"adds multiple **emojis** to the server .")
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def add_emoji(self, ctx, *, emojis):
+        emb = Embed(color=0x2b2d31)
+        e_conv = PartialEmojiConverter()
+
+        emojis = emojis.split(' ')
+        success_count = 0
+        
+        async with ctx.channel.typing():
+            for emoji in emojis:
+                e = await e_conv.convert(ctx, emoji)
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(e.url) as res:
+                        png = await res.read()
+
+                try:
+                    emoji = await ctx.guild.create_custom_emoji(name=e.name, image=png)
+                    success_count += 1
+                except Exception as e:
+                    print(e)
+                    pass
+
+                emb.description = f"{ctx.author.mention}: added **{success_count}** emojis ."
+        await ctx.send(embed=emb)
 
 async def setup(bot):
     await bot.add_cog(Miscellaneous(bot))

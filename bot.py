@@ -49,7 +49,6 @@ async def on_ready():
 
 @bot.event
 async def on_message_edit(old, new):
-    print(new.content)
     await bot.process_commands(new)
 
 @bot.event
@@ -175,4 +174,5 @@ async def reload(ctx, cog):
         emb.description = f"{ctx.author.mention}: `{cog}.py` does not exist ."
     await ctx.send(embed=emb)
 
+keep_alive()
 bot.run(os.environ['TOKEN'])

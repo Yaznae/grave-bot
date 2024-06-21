@@ -470,7 +470,7 @@ class Administrator(Cog):
             emb.description = f"{ctx.author.mention}: this server has no **embeds** ."
             await ctx.send(embed=emb)
 
-    @embed_group.group(name="set", description="sets **embeds** to specific events .", invoke_without_subcommand=True)
+    @embed_group.group(name="set", description="sets **embeds** to specific events .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
     async def embed_set_group(self, ctx):
