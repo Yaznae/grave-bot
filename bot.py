@@ -6,7 +6,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from colorama import Fore
 from discord import Intents, Embed, Activity, ActivityType, Status
-from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound
+from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound, CommandNotFound
 b = '\033[1m'
 x = '\033[0m'
 
@@ -104,8 +104,13 @@ async def on_command_error(ctx, err):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: invalid **color** ."
         await ctx.send(embed=emb)
-    else:
+    elif isinstance(err, CommandNotFound):
         pass
+    else:
+        print(err)
+        emb = Embed(color=0x2b2d31)
+        emb.description = f"{ctx.author.mention}: an error occured ."
+        await ctx.send(embed=emb)
 
     print(err)
 
