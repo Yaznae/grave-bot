@@ -854,7 +854,7 @@ class Administrator(Cog):
                 banner = await a.read()
         elif image:
             if image == 'none' or image == 'remove':
-                await ctx.guild.edit(icon=None)
+                await ctx.guild.edit(banner=None)
                 emb.description = f"{ctx.author.mention}: removed **server banner** ."
                 await ctx.send(embed=emb)
                 return
@@ -866,11 +866,11 @@ class Administrator(Cog):
                             print(resp)
                             banner = await resp.read()
         elif not image:
-            await ctx.guild.edit(icon='purposerrorxd')
+            await ctx.guild.edit(banner='purposerrorxd')
             return
 
-        if img:
-            await ctx.guild.edit(icon=img)
+        if banner:
+            await ctx.guild.edit(banner=banner)
             emb.description = f"{ctx.author.mention}: successfully changed **server banner** ."
         else:
             emb.description = f"{ctx.author.mention}: invalid **banner** ."
