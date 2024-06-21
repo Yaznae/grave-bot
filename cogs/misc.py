@@ -280,7 +280,7 @@ class Miscellaneous(Cog):
     @emoji_group.command(name="addmany", description=f"adds multiple **emojis** to the server .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    async def add_emoji(self, ctx, *, emojis):
+    async def addmany_emoji(self, ctx, *, emojis):
         emb = Embed(color=0x2b2d31)
         e_conv = PartialEmojiConverter()
 

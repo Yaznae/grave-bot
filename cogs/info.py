@@ -1,5 +1,5 @@
 import math
-from discord.ext.commands import Cog, command, MemberConverter, UserConverter
+from discord.ext.commands import Cog, command, MemberConverter, UserConverter, guild_only
 from discord import Embed, Button, ButtonStyle, Interaction
 from typing import Optional
 from discord.ui import View, button
@@ -10,7 +10,21 @@ class Info(Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @command(name="userinfo", aliases=["uinfo", "info", "ui"], description="shows information about a user .")
+    @guild_only()
+    async def user_info(self, ctx, user: Optional[str]):
+        if user:
+            u_conv = UserConverter()
+            u = await u_conv.convert(ctx, user)
+        else:
+            u = ctx.author
+
+        emb = Embed(color=0x2b2d31)
+        emb.set_author(name=f"@{u.name} | user id: {u.id}")
+        emb.set_thumbnail(url=u.display_avatar.url)
+
     @command(name="serverinfo", aliases=["sinfo", "si"], description="shows information about the guild .")
+    @guild_only()
     async def server_info(self, ctx):
         g = ctx.guild
         emb = Embed(color=0x2b2d31)
