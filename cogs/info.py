@@ -59,13 +59,17 @@ class Info(Cog):
 
     @command(name="avatar", description="shows a user's avatar .", aliases=['av', 'pfp'])
     async def get_avatar(self, ctx, user: Optional[str]):
+        emb = Embed(color=0x2b2d31)
         if user:
             u_conv = UserConverter()
             u = await u_conv.convert(ctx, user)
         else:
             u = ctx.author
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name=f"{u.name}'s avatar :", url=f"{u.avatar.url if u.avatar else None}")
+
+        if u.avatar:
+            emb.set_author(name=f"{u.name}'s avatar :", url=u.avatar.url)
+        else:
+            emb.set_author(name=f"{u.name}'s avatar :")
         emb.set_image(url=u.display_avatar.url)
         await ctx.send(embed=emb)
 
