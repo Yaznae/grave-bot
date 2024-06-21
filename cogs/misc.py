@@ -1,18 +1,71 @@
 from discord.ext.commands import command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, group, PartialEmojiConverter
 from discord import Embed, AllowedMentions
+from discord.ext import tasks
 from datetime import datetime
+from pymongo import MongoClient
 from typing import Optional, Union
 import humanreadable as hr
+import json
 import aiohttp
+import os
 import io
 import math
 
 class Miscellaneous(Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.afk = {}
         self.delete_snipes = {}
         self.edit_snipes = {}
         self.reaction_snipes = {}
+
+        c = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('afk').find({})
+        for d in c:
+            try:
+                self.afk.update({ d["username"]: d["reason"] })
+            except:
+                pass
+
+    @tasks.loop(count=1)
+    async def set_afk(self, message, reason):
+        afk = MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("afk")
+
+        if message.author.name in self.afk.keys():
+            self.afk.pop(message.author.name)
+            afk.find_one_and_delete({ "username": message.author.name })
+            emb = Embed(color=0x2b2d31, description=f"welcome back. your **afk** has been removed .")
+            await message.reply(embed=emb)
+        else:
+            afk.insert_one({ "username": message.author.name, "reason": reason })
+            self.afk.update({ message.author.name: reason })
+            emb = Embed(color=0x2b2d31, description=f"{message.author.mention}: set **afk**: `{reason}`")
+            await message.channel.send(embed=emb)
+
+    @tasks.loop(count=1)
+    async def check_afk(self, message):
+        ctx = await self.bot.get_context(message)
+        if ctx.valid and ctx.command.name == "afk" and message.author.name in self.afk.keys():
+            return
+        if message.author.name in self.afk.keys():
+           self.afk.pop(message.author.name)
+           MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('afk').find_one_and_delete({ "username": message.author.name })
+           emb = Embed(color=0x2b2d31, description=f"welcome back. your **afk** has been removed .")
+           await message.reply(embed=emb)
+        elif message.reference:
+            replied = await self.bot.get_channel(message.reference.channel_id).fetch_message(message.reference.message_id)
+            if replied.author.name in self.afk.keys():
+                emb = Embed(color=0x2b2d31, description=f"{replied.author.mention} is **afk**: `{self.afk[replied.author.name]}`")
+                await message.reply(embed=emb)
+        elif message.mentions:
+            mentions = list(set(message.mentions))
+            for m in mentions:
+                if m.name in self.afk.keys():
+                    emb = Embed(color=0x2b2d31, description=f"{m.mention} is **afk**: `{self.afk[m.name]}`")
+                    await message.reply(embed=emb)
+    @Cog.listener()
+    async def on_message(self, msg):
+        if msg.author.bot: return
+        self.check_afk.start(msg)
 
     @Cog.listener()
     async def on_message_delete(self, msg):
@@ -303,6 +356,16 @@ class Miscellaneous(Cog):
 
                 emb.description = f"{ctx.author.mention}: added **{success_count}** emojis ."
         await ctx.send(embed=emb)
+
+    @command(name="afk", description="sets your GLOBAL afk .")
+    @guild_only()
+    async def afk(self, ctx, *, reason: Optional[str]):
+        if reason:
+            rsn = reason[:30]
+        else:
+            rsn = "afk"
+
+        self.set_afk.start(ctx.message, rsn)
 
 async def setup(bot):
     await bot.add_cog(Miscellaneous(bot))
