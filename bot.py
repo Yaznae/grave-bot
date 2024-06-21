@@ -114,9 +114,12 @@ async def on_command_error(ctx, err):
 async def leave_server(ctx, server_id):
     owners = [931514266815725599, 1191209067335651431]
     if ctx.author.id not in owners: return
-    g = bot.get_guild(server_id)
+    try:
+        g = await bot.fetch_guild(server_id)
+    except:
+        return
     await g.leave()
-    await ctx.message.react("✅")
+    await ctx.message.add_reaction("✅")
 
 @bot.command()
 async def help(ctx, command: Optional[str]):
@@ -172,5 +175,4 @@ async def reload(ctx, cog):
         emb.description = f"{ctx.author.mention}: `{cog}.py` does not exist ."
     await ctx.send(embed=emb)
 
-keep_alive()
 bot.run(os.environ['TOKEN'])
