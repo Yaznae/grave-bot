@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from keep_alive import keep_alive
 from pymongo import MongoClient
 from typing import Optional
@@ -113,7 +114,7 @@ async def on_command_error(ctx, err):
     elif "Unknown Message" in str(err):
         print('oops')
     else:
-        print(err)
+        print(traceback.format_exc())
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: an error occured ."
         await ctx.send(embed=emb)
