@@ -40,6 +40,7 @@ class Fun(Cog):
     async def uwu_group(self, ctx, member):
         webhooks = await ctx.channel.webhooks()
         webhooks_users = [w.user for w in webhooks]
+        print('hi')
         if self.bot.user not in webhooks_users:
             try:
                 w = await ctx.channel.create_webhook(name="uwu // grave")
