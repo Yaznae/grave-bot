@@ -137,9 +137,14 @@ async def help(ctx, command: Optional[str]):
         prefix = config['prefix']
     emb = Embed(color=0x2b2d31)
     if command:
-        c = bot.get_command(command)
-        emb.title = f"`{c.name}` command help:"
-        emb.description = f"*{c.description}*"
+        try:
+            c = bot.get_command(command)
+            emb.title = f"`{c.name}` command help:"
+            emb.description = f"*{c.description}*"
+        except:
+            emb.description = f"{ctx.author.mention}: that **command** does not exist ."
+            await ctx.send(embed=emb)
+            return
 
         try:
             cmds = [cmd.name for cmd in c.commands]
