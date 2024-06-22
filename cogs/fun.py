@@ -41,7 +41,12 @@ class Fun(Cog):
         webhooks = await ctx.channel.webhooks()
         webhooks_users = [w.user for w in webhooks]
         if self.bot.user not in webhooks_users:
-            w = await ctx.channel.create_webhook(name="uwu // grave")
+            try:
+                w = await ctx.channel.create_webhook(name="uwu // grave")
+            except:
+                emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: couldn't create webhook. maybe check my **permissions** ?")
+                await ctx.send(embed=emb)
+                return
             self.uwu_webhooks.update({ ctx.channel.id: w })
         else:
             for w in webhooks:
