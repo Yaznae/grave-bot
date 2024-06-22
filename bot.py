@@ -6,7 +6,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from colorama import Fore
 from discord import Intents, Embed, Activity, ActivityType, Status
-from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound, CommandNotFound
+from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound, CommandNotFound, BotMissingPermissions
 b = '\033[1m'
 x = '\033[0m'
 
@@ -61,6 +61,10 @@ async def on_command_error(ctx, err):
         prefix = config['prefix']
 
     if isinstance(err, MissingPermissions):
+        emb = Embed(color=0x2b2d31)
+        emb.description = f"{ctx.author.mention}: you lack the **permissions** to use this command:\n`{'`,`'.join(err.missing_permissions)}`"
+        await ctx.send(embed=emb)
+    elif isinstance(err, BotMissingPermissions):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: you lack the **permissions** to use this command:\n`{'`,`'.join(err.missing_permissions)}`"
         await ctx.send(embed=emb)
