@@ -1,4 +1,4 @@
-from discord.ext.commands import command, Cog, has_guild_permissions, guild_only, group, bot_has_guild_permissions
+from discord.ext.commands import command, Cog, has_guild_permissions, guild_only, group, bot_has_permissions
 from discord.ext.commands import MemberConverter
 from discord import Embed, AllowedMentions
 from uwuipy import uwuipy
@@ -36,7 +36,7 @@ class Fun(Cog):
     @group(name="uwu", description="changes user messages to furry messages .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_webhooks=True)
     async def uwu_group(self, ctx, member):
         webhooks = await ctx.channel.webhooks()
         webhooks_users = [w.user for w in webhooks]
@@ -84,7 +84,7 @@ class Fun(Cog):
     @uwu_group.command(name="add", description="adds user to uwu-list .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_webhooks=True)
     async def uwu_add(self, ctx, member):
         m_conv = MemberConverter()
         m = await m_conv.convert(ctx, member)
@@ -115,7 +115,7 @@ class Fun(Cog):
     @uwu_group.group(name="remove", description="removes user from uwu-list .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_webhooks=True)
     async def uwu_remove(self, ctx, member):
         if ctx.invoked_subcommand is None:
             m_conv = MemberConverter()
@@ -145,7 +145,7 @@ class Fun(Cog):
     @uwu_remove.command(name="all", description="removes **all** users from uwu-list .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_webhooks=True)
     async def uwu_remove_all(self, ctx):
         try:
             self.uwu_list.pop(ctx.channel.id)
@@ -158,7 +158,7 @@ class Fun(Cog):
     @uwu_group.command(name="list", description="lists members in **uwu-list** .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_webhooks=True)
     async def uwu_list(self, ctx):
         emb = Embed(color=0x2b2d31)
 
@@ -180,7 +180,7 @@ class Fun(Cog):
     @group(name="shutup", aliases=["su", "stfu"], description="shuts up users .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
     async def stfu_group(self, ctx, member):
         if ctx.invoked_subcommand is None:
             m_conv = MemberConverter()
@@ -212,7 +212,7 @@ class Fun(Cog):
     @stfu_group.command(name="add", description="shuts up users .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
     async def stfu_add(self, ctx, member):
         m_conv = MemberConverter()
         m = await m_conv.convert(ctx, member)
@@ -242,7 +242,7 @@ class Fun(Cog):
     @stfu_group.group(name="remove", description="removes user from su-list .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
     async def stfu_remove(self, ctx, member):
         if ctx.invoked_subcommand is None:
             m_conv = MemberConverter()
@@ -272,7 +272,7 @@ class Fun(Cog):
     @stfu_remove.command(name="all", description="removes **all** users from su-list .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
     async def stfu_remove_all(self, ctx):
         try:
             self.su_list.pop(ctx.guild.id)
@@ -285,7 +285,7 @@ class Fun(Cog):
     @stfu_group.command(name="list", description="lists members in **su-list** .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    @bot_has_guild_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
     async def stfu_list(self, ctx):
         emb = Embed(color=0x2b2d31)
 
