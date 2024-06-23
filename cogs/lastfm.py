@@ -27,10 +27,7 @@ class LastFM(Cog):
     async def lastfm_group(self, ctx, member: Optional[str]):
         m_conv = MemberConverter()
         if ctx.invoked_subcommand == None:
-            if member:
-                m = await m_conv.convert(ctx, member)
-            else:
-                m = ctx.author
+            await self.bot.invoke(self.lastfm_nowplaying_indp, member=member)
 
     @lastfm_group.command(name='help', description="shows this prompt .")
     @guild_only()
