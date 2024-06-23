@@ -16,9 +16,9 @@ class LastFM(Cog):
         self.lfm_api = os.environ["LASTFM_API"]
         self.config = config
         
-    async def get_lf_user(self, username):
+    async def get_lf_user(self, user_id):
         c = self.mongo.get_collection('users')
-        r = c.find_one({ "username": username })
+        r = c.find_one({ "user_id": str(user_id) })
         return r
 
     @group(name="lastfm", aliases=["lf", "fm", "lfm"], description="use **last.fm** related commands .", invoke_without_command=True)
@@ -27,7 +27,7 @@ class LastFM(Cog):
     async def lastfm_group(self, ctx, member: Optional[str]):
         m_conv = MemberConverter()
         if ctx.invoked_subcommand == None:
-            await self.bot.invoke(self.lastfm_nowplaying_indp, member=member)
+            await ctx.invoke(self.bot.get_command('nowplaying'), member=member)
 
     @lastfm_group.command(name='help', description="shows this prompt .")
     @guild_only()
@@ -62,11 +62,11 @@ class LastFM(Cog):
 
         emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: updating **last.fm** username to `{username}` ...")
         m = await ctx.send(embed=emb)
-        mongo_check = await self.get_lf_user(ctx.author.name)
+        mongo_check = await self.get_lf_user(ctx.author.id)
         if mongo_check:
-            self.mongo.get_collection('users').find_one_and_update({ "username": ctx.author.name }, { "$set": {"lastfm_user": username } })
+            self.mongo.get_collection('users').find_one_and_update({ "user_id": str(ctx.author.id) }, { "$set": {"lastfm_user": username } })
         else:
-            self.mongo.get_collection('users').insert_one({ "username": ctx.author.name, "lastfm_user": username })
+            self.mongo.get_collection('users').insert_one({ "user_id": str(ctx.author.id), "lastfm_user": username })
 
         emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: updated **last.fm** username to `{username}` .")
         await m.edit(embed=emb)
@@ -83,9 +83,8 @@ class LastFM(Cog):
         else:
             m = ctx.author
 
-            
         async with ctx.channel.typing():
-            check = await self.get_lf_user(m.name)
+            check = await self.get_lf_user(m.id)
             if not check:
                 emb.description = f"{m.mention} has not **logged in** to last.fm yet ."
                 await ctx.send(embed=emb)
@@ -121,7 +120,7 @@ class LastFM(Cog):
 
             
         async with ctx.channel.typing():
-            check = await self.get_lf_user(m.name)
+            check = await self.get_lf_user(m.id)
             if not check:
                 emb.description = f"{m.mention} has not **logged in** to last.fm yet ."
                 await ctx.send(embed=emb)
