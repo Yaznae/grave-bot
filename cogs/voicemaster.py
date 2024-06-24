@@ -212,7 +212,7 @@ class Voicemaster(Cog):
         else:
             vc_id = list(self.voice_channels.keys())[list(self.voice_channels.values()).index(ctx.author.id)]
             vc = ctx.guild.get_channel(vc_id)
-            if not vc.permissions_for(ctx.guild.default_role).connect:
+            if not vc.permissions_for(ctx.guild.default_role).connect and vc.permissions_for(ctx.guild.default_role).connect is not None:
                 emb.description = f"{ctx.author.mention}: {vc.mention} is already **locked** ."
             else:
                 await vc.set_permissions(ctx.author, connect=True)
