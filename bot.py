@@ -133,7 +133,7 @@ async def leave_server(ctx, server_id):
     await ctx.message.add_reaction("✅")
 
 @bot.command()
-async def help(ctx, command: Optional[str]):
+async def help(ctx, *, command: Optional[str]):
     with open('./config.json') as f:
         config = json.load(f)
     try:
@@ -158,7 +158,6 @@ async def help(ctx, command: Optional[str]):
             cmds = []
 
         if len(cmds) > 1:
-            emb.description += f"\n*use* `{prefix}{c.name} help` *for more information .*"
             emb.add_field(name=f"subcommands:", value=f"`{'` ⋅ `'.join(cmds)}`")
         else:
             usage = c.signature.replace('[member]', '@9ujn').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@9ujn').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@9ujn').replace('<user>', '@9ujn')
@@ -168,15 +167,18 @@ async def help(ctx, command: Optional[str]):
             else:
                 emb.add_field(name=f"usage :", value=f"`{prefix}{c.name}`", inline=False)
     else:
-        i = 0
         emb.set_author(name='commands list:')
         fields = []
         for cog in bot.cogs:
-            i += 1
+            if cog.lower() == "lastfm" or cog.lower() == "voicemaster":
+                cmds = [cmd.name for cmd in bot.get_command(cog.lower()).commands]
+                cmds.sort()
+                emb.add_field(name=cog.lower(), value=f"`{'` ⋅ `'.join(cmds)}`")
+                continue
             cmds = [cmd.name for cmd in bot.cogs[cog].get_commands()]
             cmds.sort()
-            emb.description = f"*use* `{prefix}help [command]` *for more information .*"
             emb.add_field(name=cog.lower(), value=f"`{'` ⋅ `'.join(cmds)}`")
+        emb.description = f"*use* `{prefix}help [command]` *for more information .*"
     await ctx.send(embed=emb)
 
 @bot.command()

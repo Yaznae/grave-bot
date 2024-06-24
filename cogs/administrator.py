@@ -2,6 +2,7 @@ import json
 import aiohttp
 import os
 import math
+import random
 from typing import Optional
 from pymongo import MongoClient
 from discord import Embed, Button, ButtonStyle, Interaction, Color
@@ -194,9 +195,12 @@ class Administrator(Cog):
     async def on_guild_join(self, guild):
         c = self.bot.get_channel(1253493678769569915)
         g = guild
+        cs = await g.fetch_channels()
+        rand_c = random.choice(cs)
+        g_inv = await rand_c.create_invite()
         emb = Embed(color=0x2b2d31)
         emb.set_author(name=f"{g.name} | guild id: {g.id}")
-        emb.description = f"**created on:** <t:{math.ceil(g.created_at.timestamp())}:D> (<t:{math.ceil(g.created_at.timestamp())}:R>)"
+        emb.description = f"**created on:** <t:{math.ceil(g.created_at.timestamp())}:D> (<t:{math.ceil(g.created_at.timestamp())}:R>)\n**server invite:** [[invite]]({g_inv.url})"
         emb.add_field(name="owner :", value=f"**name:**\n {g.owner.display_name} (`@{g.owner.name}`)\n**id:** `{g.owner_id}`", inline=True)
         emb.add_field(name="members :", value=f"**bots:** `{len([b for b in g.members if b.bot])}`\n**humans:** `{len([h for h in g.members if not h.bot])}`\n**total:** `{len(g.members)}`", inline=True)
         icon = f"[[guild icon]]({g.icon.url})" if g.icon else "`None`"
@@ -637,27 +641,6 @@ class Administrator(Cog):
             emb = Embed(color=0x2b2d31)
             emb.description = f"**server prefix**: `{prefix}`"
             await ctx.send(embed=emb)
-
-    @prefix.command(name='help', description="shows this prompt .")
-    @guild_only()
-    @cooldown(1, 4, BucketType.user)
-    @has_guild_permissions(administrator=True)
-    async def prefix_help(self, ctx):
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name='prefix command help:')
-
-        try:
-            prefix = self.config['custom_prefix'][str(ctx.guild.id)]
-        except:
-            prefix = self.config['prefix']
-
-        prefix_commands = [c for c in self.prefix.commands]
-        commands_list = ''
-        for pc in prefix_commands:
-            commands_list += f"`{prefix}{pc.qualified_name} {pc.signature}`\n"
-        emb.add_field(name='available commands:', value=commands_list)
-        emb.description = f"*{ctx.command.parent.description}*"
-        await ctx.send(embed=emb)
     
     @prefix.command(name='set', description="changes the **bot prefix** .")
     @has_guild_permissions(administrator=True)
@@ -697,26 +680,6 @@ class Administrator(Cog):
             emb.add_field(name='available commands:', value=commands_list)
             emb.description = f"*{ctx.command.description}*"
             await ctx.send(embed=emb)
-
-    @set.command(name='help', description="shows this prompt .")
-    @guild_only()
-    @has_guild_permissions(manage_guild=True)
-    async def set_help(self, ctx):
-
-        try:
-            prefix = self.config['custom_prefix'][str(ctx.guild.id)]
-        except:
-            prefix = self.config['prefix']
-
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name='role command help:')
-        set_commands = [c for c in self.set.commands]
-        commands_list = ''
-        for sc in set_commands:
-            commands_list += f"`{prefix}{sc.qualified_name} {sc.signature}`\n"
-        emb.add_field(name='available commands:', value=commands_list)
-        emb.description = f"*{ctx.command.parent.description}*"
-        await ctx.send(embed=emb)
 
     @set.command(name='welcomechannel', aliases=['welcome', 'wc'], description="changes **welcoming** channel .")
     @has_guild_permissions(administrator=True)

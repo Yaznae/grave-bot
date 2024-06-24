@@ -91,27 +91,6 @@ class Moderation(Cog):
                 emb.description = f"{ctx.author.mention}: added {r.mention} to {m.mention} ."
             await ctx.send(embed=emb)
 
-    @role.command(name='help', description="shows this prompt .")
-    @guild_only()
-    @cooldown(1, 3, BucketType.user)
-    @has_guild_permissions(manage_roles=True)
-    async def role_help(self, ctx):
-
-        try:
-            prefix = self.config['custom_prefix'][ctx.guild.id]
-        except:
-            prefix = self.config['prefix']
-
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name='role command help:')
-        role_commands = [c for c in self.role.commands]
-        commands_list = ''
-        for rc in role_commands:
-            commands_list += f"`{prefix}{rc.qualified_name} {rc.signature}`\n"
-        emb.add_field(name='available commands:', value=commands_list)
-        emb.description = f"*{ctx.command.parent.description}*"
-        await ctx.send(embed=emb)
-
     @role.command(name='restore', description="restores **roles** of a user that has recently left .")
     @guild_only()
     @cooldown(1, 3, BucketType.user)
@@ -769,27 +748,6 @@ class Moderation(Cog):
                 emb.description = f"{ctx.author.mention}: {c.mention} is **already locked** ."
             await ctx.send(embed=emb)
 
-    @lock_channel.command(name='help', description="shows this prompt .")
-    @guild_only()
-    @cooldown(1, 3, BucketType.user)
-    @has_guild_permissions(manage_roles=True)
-    async def lock_help(self, ctx):
-
-        try:
-            prefix = self.config['custom_prefix'][ctx.guild.id]
-        except:
-            prefix = self.config['prefix']
-
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name='lock command help:')
-        lock_commands = [c for c in self.lock_channel.commands]
-        commands_list = ''
-        for lc in lock_commands:
-            commands_list += f"`{prefix}{lc.qualified_name} {lc.signature}`\n"
-        emb.add_field(name='available commands:', value=commands_list)
-        emb.description = f"*{ctx.command.parent.description}*"
-        await ctx.send(embed=emb)
-
     @lock_channel.command(name='all', description="locks **every channel** in the server .")
     @guild_only()
     @has_guild_permissions(manage_channels=True)
@@ -845,27 +803,6 @@ class Moderation(Cog):
                 json.dump(self.config, f, indent=4)
             emb.description = f"{ctx.author.mention}: added {c.mention} to the **lock ignore** list ."
             await ctx.send(embed=emb)
-
-    @lock_ignore_group.command(name='help', description="shows this prompt .")
-    @guild_only()
-    @cooldown(1, 3, BucketType.user)
-    @has_guild_permissions(manage_roles=True)
-    async def li_help(self, ctx):
-
-        try:
-            prefix = self.config['custom_prefix'][ctx.guild.id]
-        except:
-            prefix = self.config['prefix']
-
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name='lock ignore command help:')
-        li_commands = [c for c in self.lock_ignore_group.commands]
-        commands_list = ''
-        for lic in li_commands:
-            commands_list += f"`{prefix}{lic.qualified_name} {lic.signature}`\n"
-        emb.add_field(name='available commands:', value=commands_list)
-        emb.description = f"*{ctx.command.parent.description}*"
-        await ctx.send(embed=emb)
 
     @lock_ignore_group.command(name='add', description="adds a **channel** to ignore when using `lock all` commands .")
     @guild_only()

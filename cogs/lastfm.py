@@ -29,26 +29,6 @@ class LastFM(Cog):
         if ctx.invoked_subcommand == None:
             await ctx.invoke(self.bot.get_command('nowplaying'), member=member)
 
-    @lastfm_group.command(name='help', description="shows this prompt .")
-    @guild_only()
-    @cooldown(1, 3, BucketType.user)
-    async def lastfm_help(self, ctx):
-
-        try:
-            prefix = self.config['custom_prefix'][ctx.guild.id]
-        except:
-            prefix = self.config['prefix']
-
-        emb = Embed(color=0x2b2d31)
-        emb.set_author(name='lastfm command help:')
-        lfm_commands = [c for c in self.lastfm_group.commands]
-        commands_list = ''
-        for lfc in lfm_commands:
-            commands_list += f"`{prefix}{lfc.qualified_name} {lfc.signature}`\n"
-        emb.add_field(name='available commands:', value=commands_list)
-        emb.description = f"*{ctx.command.parent.description}*"
-        await ctx.send(embed=emb)
-
     @lastfm_group.command(name="login", description="log into your **last.fm** account .")
     @guild_only()
     @cooldown(1, 2, BucketType.user)
