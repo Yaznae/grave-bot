@@ -237,7 +237,7 @@ class Voicemaster(Cog):
         else:
             vc_id = list(self.voice_channels.keys())[list(self.voice_channels.values()).index(ctx.author.id)]
             vc = ctx.guild.get_channel(vc_id)
-            if vc.permissions_for(ctx.guild.default_role).connect:
+            if vc.permissions_for(ctx.guild.default_role).view_channel or vc.permissions_for(ctx.guild.default_role).view_channel is None:
                 emb.description = f"{ctx.author.mention}: {vc.mention} is already **unlocked** ."
             else:
                 await vc.set_permissions(ctx.guild.default_role, connect=True)
@@ -433,7 +433,7 @@ class Voicemaster(Cog):
         else:
             vc_id = list(self.voice_channels.keys())[list(self.voice_channels.values()).index(ctx.author.id)]
             vc = ctx.guild.get_channel(vc_id)
-            if vc.permissions_for(ctx.guild.default_role).view_channel:
+            if vc.permissions_for(ctx.guild.default_role).view_channel or vc.permissions_for(ctx.guild.default_role).view_channel is None:
                 await vc.set_permissions(ctx.guild.default_role, view_channel=False)
                 await ctx.send("👻")
             else:

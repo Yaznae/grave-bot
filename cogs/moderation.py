@@ -2,6 +2,7 @@ import json
 import humanreadable as hr
 import time
 from typing import Optional
+from pymongo import MongoClient
 from datetime import datetime, timedelta
 from discord import Embed, Colour, Forbidden, NotFound, Permissions, CategoryChannel
 from discord.utils import get
@@ -736,9 +737,9 @@ class Moderation(Cog):
         if ctx.invoked_subcommand == None:
             emb = Embed(color=0x2b2d31)
             c = ctx.channel
-            if self.config['lock_role']:
-                r = ctx.guild.get_role(self.config['lock_role'])
-            else:
+            try:
+                r = ctx.guild.get_role(self.config['lock_role'][ctx.guild.id])
+            except:
                 r = ctx.guild.default_role
 
             if bool(ctx.channel.permissions_for(r).send_messages):
@@ -748,15 +749,29 @@ class Moderation(Cog):
                 emb.description = f"{ctx.author.mention}: {c.mention} is **already locked** ."
             await ctx.send(embed=emb)
 
+    @lock_channel.group(name="permit", description="allows users to bypass channel lock .")
+    @guild_only()
+    @cooldown(1, 2, BucketType.user)
+    @has_guild_permissions(manage_channels=True)
+    async def permit_user(self, ctx, member):
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        emb = Embed(color=0x2b2d31)
+
+
+        if ctx.channel.permissions_for(m).send_messages:
+            emb.description = f"{ctx.author.mention}: {m.mention} is already **permitted** to talk ."
+            await ctx.send(embed=emb)
+
     @lock_channel.command(name='all', description="locks **every channel** in the server .")
     @guild_only()
     @has_guild_permissions(manage_channels=True)
     @cooldown(1, 3, BucketType.user)
     async def lockall_channels(self, ctx):
         emb = Embed(color=0x2b2d31)
-        if self.config['lock_role']:
-            r = ctx.guild.get_role(self.config['lock_role'])
-        else:
+        try:
+            r = ctx.guild.get_role(self.config['lock_role'][ctx.guild.id])
+        except:
             r = ctx.guild.default_role
 
         async with ctx.channel.typing():
@@ -779,7 +794,7 @@ class Moderation(Cog):
             await ctx.send(embed=emb)
             return
 
-        self.config['lock_role'] = r.id
+        self.config['lock_role'].update({ ctx.guild.id: r.id })
         with open('./config.json', 'w') as f:
             json.dump(self.config, f, indent=4)
         emb.description = f"{ctx.author.mention}: set **lock role** to {r.mention} ."
@@ -816,9 +831,9 @@ class Moderation(Cog):
         else:
             c = ctx.channel
 
-        if self.config['lock_role']:
-            r = ctx.guild.get_role(self.config['lock_role'])
-        else:
+        try:
+            r = ctx.guild.get_role(self.config['lock_role'][ctx.guild.id])
+        except:
             r = ctx.guild.default_role
 
         if isinstance(c, CategoryChannel):
@@ -916,9 +931,9 @@ class Moderation(Cog):
         if ctx.invoked_subcommand == None:
             emb = Embed(color=0x2b2d31)
             c = ctx.channel
-            if self.config['lock_role']:
-                r = ctx.guild.get_role(self.config['lock_role'])
-            else:
+            try:
+                r = ctx.guild.get_role(self.config['lock_role'][ctx.guild.id])
+            except:
                 r = ctx.guild.default_role
 
             if not bool(ctx.channel.permissions_for(r).send_messages):
@@ -934,9 +949,9 @@ class Moderation(Cog):
     @cooldown(1, 3, BucketType.user)
     async def unlockall_channels(self, ctx):
         emb = Embed(color=0x2b2d31)
-        if self.config['lock_role']:
-            r = ctx.guild.get_role(self.config['lock_role'])
-        else:
+        try:
+            r = ctx.guild.get_role(self.config['lock_role'][ctx.guild.id])
+        except:
             r = ctx.guild.default_role
 
         async with ctx.channel.typing():
