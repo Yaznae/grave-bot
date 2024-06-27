@@ -16,8 +16,8 @@ class Info(Cog):
     @Cog.listener()
     async def on_guild_join(self, guild):
         if not guild.system_channel:
-            cs = await guild.fetch_channels()
-            c = random.choice(cs)
+            await guild.fetch_channels()
+            c = random.choice(guild.text_channels)
         else:
             c = guild.system_channel
 
