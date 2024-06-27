@@ -5,12 +5,29 @@ from typing import Optional
 from discord.ui import View, button
 from discord.utils import get
 from pymongo import MongoClient
+import random
 import os
 import requests
 
 class Info(Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @Cog.listener()
+    async def on_guild_join(self, guild):
+        if not guild.system_channel:
+            cs = await guild.fetch_channels()
+            c = random.choice(cs)
+        else:
+            c = guild.system_channel
+
+        emb = Embed(color=0x2b2d31)
+        emb.description = f"thank you for inviting **grave** . use `$help` for a list of commands ."
+        await c.send(embed=emb)
+
+    @command(name="test")
+    async def test_join(self, ctx):
+        await self.bot.dispatch("guild_join", ctx.guild)
 
     @command(name="userinfo", aliases=["uinfo", "info", "ui"], description="shows information about a user .")
     @guild_only()
