@@ -52,6 +52,13 @@ class Moderation(Cog):
         else:
             return
 
+    @group(name="jail", description="jails users from the server .", invoke_without_command=True)
+    @guild_only()
+    @has_guild_permissions(manage_messages=True)
+    async def jail_group(self, ctx, member, duration: Optional[str], reason: Optional[str]):
+        if ctx.invoked_subcommand is None:
+            pass
+
     @command(description="nukes the **channel** .")
     @guild_only()
     @has_guild_permissions(manage_channels=True)

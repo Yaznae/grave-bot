@@ -64,6 +64,7 @@ class Voicemaster(Cog):
     @guild_only()
     async def voicemaster_group(self, ctx):
         if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.bot.get_command('help'), command="voicemaster")
             return
 
     @voicemaster_group.command(name="setup", description="sets up voicemaster for this server .")
