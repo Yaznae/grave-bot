@@ -30,10 +30,6 @@ class Info(Cog):
         emb.description = f"thank you for inviting **grave** . use `$help` for a list of commands ."
         await c.send(embed=emb)
 
-    @command(name="test")
-    async def test_join(self, ctx):
-        await self.bot.dispatch("guild_join", ctx.guild)
-
     @command(name="userinfo", aliases=["uinfo", "info", "ui"], description="shows information about a user .")
     @guild_only()
     async def user_info(self, ctx, user: Optional[str]):
