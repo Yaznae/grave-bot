@@ -1,6 +1,6 @@
 import math
 from discord.ext.commands import Cog, command, MemberConverter, UserConverter, guild_only
-from discord import Embed, Button, ButtonStyle, Interaction
+from discord import Embed, Button, ButtonStyle, Interaction, TextChannel
 from typing import Optional
 from discord.ui import View, button
 from discord.utils import get
@@ -16,8 +16,13 @@ class Info(Cog):
     @Cog.listener()
     async def on_guild_join(self, guild):
         if not guild.system_channel:
-            await guild.fetch_channels()
-            c = random.choice(guild.text_channels)
+            cs = await guild.fetch_channels()
+            while True:
+                c = random.choice(cs)
+                if not isinstance(c, TextChannel):
+                    continue
+                else:
+                    break
         else:
             c = guild.system_channel
 
