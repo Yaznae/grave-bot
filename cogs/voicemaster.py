@@ -274,15 +274,15 @@ class Voicemaster(Cog):
             vc_id = list(self.voice_channels.keys())[list(self.voice_channels.values()).index(ctx.author.id)]
             vc = ctx.guild.get_channel(vc_id)
             if vc.permissions_for(t).connect:
-                emb.description = f"{ctx.author.mention}: {t.mention} is already **permitted** ."
+                emb.description = f"{ctx.author.mention}: {t.mention} is already **permitted** to join ."
             else:
                 await vc.set_permissions(t, connect=True)
-                emb.description = f"{ctx.author.mention}: **permitted** {t.mention} ."
+                emb.description = f"{ctx.author.mention}: **permitted** {t.mention} to join ."
             await ctx.send(embed=emb)
 
-    @voicemaster_group.command(name="deny", description="denies a user or role from joining your voice channel .")
+    @voicemaster_group.command(name="reject", aliases=["deny"], description="denies a user or role from joining your voice channel .")
     @guild_only()
-    async def deny_vc(self, ctx, *, target):
+    async def reject_vc(self, ctx, *, target):
         emb = Embed(color=0x2b2d31)
         vc_conv = GuildChannelConverter()
         r_conv = RoleConverter()
@@ -310,7 +310,7 @@ class Voicemaster(Cog):
             vc_id = list(self.voice_channels.keys())[list(self.voice_channels.values()).index(ctx.author.id)]
             vc = ctx.guild.get_channel(vc_id)
             if not vc.permissions_for(t).connect:
-                emb.description = f"{ctx.author.mention}: {t.mention} is already **denied** ."
+                emb.description = f"{ctx.author.mention}: {t.mention} is already **denied** from joining ."
             else:
                 await vc.set_permissions(t, connect=False)
                 if isinstance(t, Role):
@@ -319,7 +319,7 @@ class Voicemaster(Cog):
                             await m.move_to(channel=None)
                 elif t in vc.members:
                     await t.move_to(channel=None)
-                emb.description = f"{ctx.author.mention}: **denied** {t.mention} ."
+                emb.description = f"{ctx.author.mention}: **denied** {t.mention} from joining ."
             await ctx.send(embed=emb)
 
     @voicemaster_group.command(name="name", aliases=["rename"], description="renames your voice channel .")
