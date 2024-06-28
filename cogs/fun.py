@@ -80,6 +80,12 @@ class Fun(Cog):
                 
             self.uwu_list.update({ ctx.channel.id: uwu_list })
             await ctx.send(embed=emb)
+
+    @uwu_group.command(name="reset", description="same as `uwu remove all` .")
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def uwu_reset(self, ctx):
+        await ctx.invoke(self.bot.get_command('uwu reset all'))
             
     @uwu_group.command(name="add", description="adds user to uwu-list .")
     @guild_only()
