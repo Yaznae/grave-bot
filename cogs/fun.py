@@ -85,7 +85,7 @@ class Fun(Cog):
     @guild_only()
     @has_guild_permissions(administrator=True)
     async def uwu_reset(self, ctx):
-        await ctx.invoke(self.bot.get_command('uwu reset all'))
+        await ctx.invoke(self.bot.get_command('uwu remove all'))
             
     @uwu_group.command(name="add", description="adds user to uwu-list .")
     @guild_only()
