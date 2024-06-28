@@ -38,8 +38,10 @@ class Fun(Cog):
     @has_guild_permissions(administrator=True)
     @bot_has_permissions(manage_webhooks=True)
     async def uwu_group(self, ctx, member):
-        if self.uwu_list[ctx.channel.id] and ctx.author in self.uwu_list[ctx.channel.id]:
-            return
+        try:
+            if ctx.author in self.uwu_list[ctx.channel.id]: return
+        except KeyError:
+            pass
         webhooks = await ctx.channel.webhooks()
         webhooks_users = [w.user for w in webhooks]
         if self.bot.user not in webhooks_users:
