@@ -966,25 +966,25 @@ class Buttons(View):
         else:
             self.reply = await self.ctx.send(embed=self.embed, view=self)
 
-    @button(emoji='<:skipleft:1180996476353118248>', style=ButtonStyle.gray)
+    @button(emoji='<:skipleft:1256399619361869864>', style=ButtonStyle.gray)
     async def first(self, intr: Interaction, button: Button):
         self.index = 1
         await intr.response.defer()
         await self.edit_page(self.reply)
 
-    @button(emoji='<:leftarrow1:1179900394772639744>', style=ButtonStyle.gray)
+    @button(emoji='<:left:1256399617436946442>', style=ButtonStyle.gray)
     async def left(self, intr: Interaction, button: Button):
         self.index -= 1
         await intr.response.defer()
         await self.edit_page(self.reply)
 
-    @button(emoji='<:rightarrow1:1179900396592955442>', style=ButtonStyle.gray)
+    @button(emoji='<:right:1256399615692111982>', style=ButtonStyle.gray)
     async def right(self, intr: Interaction, button: Button):
         self.index += 1
         await intr.response.defer()
         await self.edit_page(self.reply)
 
-    @button(emoji='<:skipright:1180996474822217738>', style=ButtonStyle.gray)
+    @button(emoji='<:skipright:1256399621673193634>', style=ButtonStyle.gray)
     async def last(self, intr: Interaction, button: Button):
         self.index = self.total_pages
         await intr.response.defer()

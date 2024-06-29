@@ -64,6 +64,7 @@ class Moderation(Cog):
     @has_guild_permissions(manage_channels=True)
     async def nuke(self, ctx):
         emb = Embed(color=0x2b2d31)
+
         emb.description = f"nuked `#{ctx.channel.name}` ."
         new_channel = await ctx.channel.clone()
         await ctx.channel.delete()
@@ -1006,6 +1007,47 @@ class Moderation(Cog):
             await ctx.channel.purge(limit=amount, check=lambda m: m.author.bot or m.content.startswith(prefix))
         else:
             await ctx.channel.purge(check=lambda m: m.author.bot or m.content.startswith(prefix))
+
+class NukeConfirmation(View):
+    def __init__(self, ctx, c):
+        self.ctx = ctx
+        self.emb = Embed(color=0x2b2d31)
+        super().__init__(timeout=15)
+
+    async def interaction_check(self, intr: Interaction) -> bool:
+        if intr.user == self.ctx.author:
+            return True
+        else:
+            emb = Embed(color=0x2b2d31, description=f"{intr.user.mention}: you are not the **author** of this command .")
+            await intr.response.send_message(embed=emb, ephemeral=True)
+            return False
+
+    @button(emoji='<:skipleft:1256399619361869864>', style=ButtonStyle.gray)
+    async def first(self, intr: Interaction, button: Button):
+        self.index = 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:left:1256399617436946442>', style=ButtonStyle.gray)
+    async def left(self, intr: Interaction, button: Button):
+        self.index -= 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:right:1256399615692111982>', style=ButtonStyle.gray)
+    async def right(self, intr: Interaction, button: Button):
+        self.index += 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:skipright:1256399621673193634>', style=ButtonStyle.gray)
+    async def last(self, intr: Interaction, button: Button):
+        self.index = self.total_pages
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    async def on_timeout(self):
+        await self.reply.edit(view=None)
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
