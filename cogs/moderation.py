@@ -1022,7 +1022,7 @@ class NukeConfirmation(View):
             return False
 
     async def start(self):
-        self.emb.description = f"{self.ctx.author.mention}: are you sure you want to **nuke** {self.c.mention} ?"
+        self.emb.description = f"{self.ctx.author.mention}: are you sure you want to **nuke** {self.channel.mention} ?"
         self.message = await self.ctx.send(embed=self.emb, view=self)
 
     @button(emoji='<:check:1256405259442716903>', style=ButtonStyle.gray)
