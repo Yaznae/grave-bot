@@ -1029,6 +1029,7 @@ class NukeConfirmation(View):
     async def first(self, intr: Interaction, button: Button):
         await intr.response.defer()
         new_channel = await self.channel.clone()
+        await self.stop()
         await self.channel.delete()
         await new_channel.send('first lol')
 
