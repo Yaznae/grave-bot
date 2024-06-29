@@ -57,7 +57,7 @@ class Moderation(Cog):
     @Cog.listener()
     async def on_member_update(self, before, after):
         if after.guild.id not in self.forcednicknames.keys(): return
-        fn_list = self.forcednicknames[ctx.guild.id]
+        fn_list = self.forcednicknames[after.guild.id]
         if after.id in fn_list.keys():
             forced_nick = fn_list[after.id]
             await after.edit(nick=forced_nick)
