@@ -64,7 +64,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(manage_channels=True)
     async def nuke(self, ctx):
-        NukeConfirmation(ctx, ctx.channel).start()
+        await NukeConfirmation(ctx, ctx.channel).start()
 
     @group(aliases=['r'], invoke_without_command=True, description="manipulates **roles** .")
     @cooldown(1, 3, BucketType.user)
