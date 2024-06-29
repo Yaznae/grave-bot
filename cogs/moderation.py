@@ -19,6 +19,7 @@ class Moderation(Cog):
         self.config = config
         self.unbanall = { 'message': '', 'banned_members': [], 'context': '' }
         self.role_cache = {}
+        self.forcednicknames = {}
 
     @loop(count=1)
     async def temp_mute(self, channel, member, duration):
@@ -52,6 +53,14 @@ class Moderation(Cog):
                 self.role_cache.update({ member.guild.id: { member.name: roles } })
         else:
             return
+
+    @Cog.listener()
+    async def on_member_update(before, after):
+        if after.guild.id not in self.forcednicknames.keys(): return
+        fn_list = self.forcednicknames[ctx.guild.id]
+        if after.id in fn_list.keys():
+            forced_nick = fn_list[after.id]
+            await after.edit(nick=forced_nick)
 
     @group(name="jail", description="jails users from the server .", invoke_without_command=True)
     @guild_only()
@@ -1004,6 +1013,74 @@ class Moderation(Cog):
             await ctx.channel.purge(limit=amount, check=lambda m: m.author.bot or m.content.startswith(prefix))
         else:
             await ctx.channel.purge(check=lambda m: m.author.bot or m.content.startswith(prefix))
+
+    @command(name="nickname", aliases=["nick", "rename"], description="changes a user's nickname .")
+    @guild_only()
+    @has_guild_permissions(manage_nicknames=True)
+    async def change_nick(self, ctx, member, *, nickname):
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        emb = Embed(color=0x2b2d31)
+
+        if m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+            await ctx.send(embed=emb)
+            return
+
+        new_nick = nickname[:32]
+        await m.edit(nick=new_nick)
+        emb.description = f"{ctx.author.mention}: **nicknamed** {m.mention} to `{new_nick}` ."
+        await ctx.send(embed=emb)
+
+    @command(name="forcenickname", aliases=["forcenick", "forcerename", "fn"], description="prevents a user from changing their nickname .")
+    @guild_only()
+    @has_guild_permissions(manage_nicknames=True)
+    async def force_nick(self, ctx, member, *, nickname):
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        emb = Embed(color=0x2b2d31)
+
+        if m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+            await ctx.send(embed=emb)
+            return
+
+        new_nick = nickname[:32]
+        await m.edit(nick=new_nick)
+
+        try:
+            self.forcednicknames[ctx.guild.id].update({ m.id: new_nick })
+        except KeyError:
+            self.forcednicknames.update({ ctx.guild.id: { m.id: new_nick } })
+
+        emb.description = f"{ctx.author.mention}: **force-nicknamed** {m.mention} to `{new_nick}` ."
+        await ctx.send(embed=emb)
+
+    @command(name="unforcenickname", aliases=["unforcenick", "ubforcerename", "ufn"], description="allows a user to change their nickname .")
+    @guild_only()
+    @has_guild_permissions(manage_nicknames=True)
+    async def unforce_nick(self, ctx, member):
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        emb = Embed(color=0x2b2d31)
+
+        if m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+            await ctx.send(embed=emb)
+            return
+
+        try:
+            fn_list = self.forcednicknames[ctx.guild.id]
+            if m.id not in fn_list.keys():
+                emb.description = f"{ctx.author.mention}: {m.mention} is **not force-nicknamed** ."
+                await ctx.send(embed=emb)
+            else:
+                self.forcednicknames[ctx.guild.id].pop(m.id)
+                emb.description = f"{ctx.author.mention}: **unforce-nicknamed** {m.mention} ."
+                await ctx.send(embed=emb)
+        except KeyError:
+            emb.description = f"{ctx.author.mention}: {m.mention} is **not force-nicknamed** ."
+            await ctx.send(embed=emb)
 
 class NukeConfirmation(View):
     def __init__(self, ctx, channel):

@@ -57,6 +57,11 @@ class Fun(Cog):
                 if w.user == self.bot.user:
                     self.uwu_webhooks.update({ ctx.channel.id: w })
 
+        if member == ctx.author:
+            embed = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: you **cannot** use this command on yourself .")
+            await ctx.send(embed=embed)
+            return
+
         if ctx.invoked_subcommand is None:
             m_conv = MemberConverter()
             m = await m_conv.convert(ctx, member)
@@ -99,6 +104,11 @@ class Fun(Cog):
         m_conv = MemberConverter()
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
+
+        if member == ctx.author:
+            emb.description=f"{ctx.author.mention}: you **cannot** use this command on yourself ."
+            await ctx.send(embed=emb)
+            return
 
         if m.bot:
             emb.description = f"{ctx.author.mention}: cannot add **bots** to **uwu-list** ."
