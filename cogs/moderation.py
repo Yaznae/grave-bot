@@ -1035,7 +1035,7 @@ class NukeConfirmation(View):
     @button(emoji='<:cancel:1256397856995283035>', style=ButtonStyle.red)
     async def cancel(self, intr: Interaction, button: Button):
         await intr.response.defer()
-        self.emb.description = f"{intr.author.mention}: cancelled **nuking** {self.channel.mention} ."
+        self.emb.description = f"{intr.user.mention}: cancelled **nuking** {self.channel.mention} ."
         await self.message.edit(embed=self.emb, view=None)
 
     async def on_timeout(self):
