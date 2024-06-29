@@ -1040,7 +1040,7 @@ class NukeConfirmation(View):
 
     async def on_timeout(self):
         self.emb.description = f"{self.ctx.author.mention}: cancelled **nuking** {self.channel.mention} ."
-        await self.reply.edit(embed=self.emb, view=None)
+        await self.message.edit(embed=self.emb, view=None)
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
