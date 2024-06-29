@@ -73,7 +73,10 @@ class Administrator(Cog):
                 await c.send(msg, embed=welcome_embed)
             except:
                 welcome_embed = Embed.from_dict(embed["embed"])
-                await c.send(embed=welcome_embed)
+                try:
+                    await c.send(embed=welcome_embed)
+                except:
+                    return
 
     @Cog.listener()
     async def on_member_remove(self, member):

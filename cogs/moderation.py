@@ -64,12 +64,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(manage_channels=True)
     async def nuke(self, ctx):
-        emb = Embed(color=0x2b2d31)
-
-        emb.description = f"nuked `#{ctx.channel.name}` ."
-        new_channel = await ctx.channel.clone()
-        await ctx.channel.delete()
-        await new_channel.send('first lol')
+        NukeConfirmation.start(self, ctx, ctx.channel)
 
     @group(aliases=['r'], invoke_without_command=True, description="manipulates **roles** .")
     @cooldown(1, 3, BucketType.user)
@@ -1013,6 +1008,8 @@ class NukeConfirmation(View):
     def __init__(self, ctx, c):
         self.ctx = ctx
         self.emb = Embed(color=0x2b2d31)
+        self.channel = c
+        self.message = None
         super().__init__(timeout=15)
 
     async def interaction_check(self, intr: Interaction) -> bool:
@@ -1023,32 +1020,26 @@ class NukeConfirmation(View):
             await intr.response.send_message(embed=emb, ephemeral=True)
             return False
 
-    @button(emoji='<:skipleft:1256399619361869864>', style=ButtonStyle.gray)
+    async def start(self):
+        self.emb.description = f"{self.ctx.author.mention}: are you sure you want to **nuke** {self.c.mention} ?"
+        self.message = await self.ctx.send(embed=self.emb, view=self)
+
+    @button(emoji='<:check:1256405259442716903>', style=ButtonStyle.gray)
     async def first(self, intr: Interaction, button: Button):
-        self.index = 1
         await intr.response.defer()
-        await self.edit_page(self.reply)
+        new_channel = await self.channel.clone()
+        await self.channel.delete()
+        await new_channel.send('first lol')
 
-    @button(emoji='<:left:1256399617436946442>', style=ButtonStyle.gray)
-    async def left(self, intr: Interaction, button: Button):
-        self.index -= 1
+    @button(emoji='<:cancel:1256397856995283035>', style=ButtonStyle.red)
+    async def cancel(self, intr: Interaction, button: Button):
         await intr.response.defer()
-        await self.edit_page(self.reply)
-
-    @button(emoji='<:right:1256399615692111982>', style=ButtonStyle.gray)
-    async def right(self, intr: Interaction, button: Button):
-        self.index += 1
-        await intr.response.defer()
-        await self.edit_page(self.reply)
-
-    @button(emoji='<:skipright:1256399621673193634>', style=ButtonStyle.gray)
-    async def last(self, intr: Interaction, button: Button):
-        self.index = self.total_pages
-        await intr.response.defer()
-        await self.edit_page(self.reply)
+        self.emb.description = f"{intr.author.mention}: cancelled **nuking** {self.channel.mention} ."
+        await self.message.edit(embed=self.emb, view=None)
 
     async def on_timeout(self):
-        await self.reply.edit(view=None)
+        self.emb.description = f"{self.ctx.author.mention}: cancelled **nuking** {self.channel.mention} ."
+        await self.reply.edit(embed=self.emb, view=None)
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
