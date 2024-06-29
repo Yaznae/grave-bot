@@ -64,7 +64,8 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(manage_channels=True)
     async def nuke(self, ctx):
-        await NukeConfirmation(ctx, ctx.channel).start()
+        channel = ctx.channel
+        await NukeConfirmation(ctx, channel).start()
 
     @group(aliases=['r'], invoke_without_command=True, description="manipulates **roles** .")
     @cooldown(1, 3, BucketType.user)
@@ -1005,10 +1006,10 @@ class Moderation(Cog):
             await ctx.channel.purge(check=lambda m: m.author.bot or m.content.startswith(prefix))
 
 class NukeConfirmation(View):
-    def __init__(self, ctx, c):
+    def __init__(self, ctx, channel):
         self.ctx = ctx
         self.emb = Embed(color=0x2b2d31)
-        self.channel = c
+        self.channel = channel
         self.message = None
         super().__init__(timeout=15)
 
