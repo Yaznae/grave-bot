@@ -988,19 +988,19 @@ class Administrator(Cog):
             print(role_ids)
             d = ""
             i = 1
-            for r_id in role_ids:
-                try:
-                    r = ctx.get_role(int(r_id))
-                    d += f"`{i}` {r.mention}\n"
-                    i += 1
-                except:
-                    role_ids.remove(r_id)
-                    self.autoroles.update({ ctx.guild.id: role_ids })
-                    self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": role_ids } })
+            # for r_id in role_ids:
+            #     try:
+            #         r = ctx.get_role(int(r_id))
+            #         d += f"`{i}` {r.mention}\n"
+            #         i += 1
+            #     except:
+            #         role_ids.remove(r_id)
+            #         self.autoroles.update({ ctx.guild.id: role_ids })
+            #         self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": role_ids } })
             
-            emb.set_author(name="list of autoroles :")
-            emb.description = d
-            await ctx.send(embed=emb)
+            # emb.set_author(name="list of autoroles :")
+            # emb.description = d
+            # await ctx.send(embed=emb)
 
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):
