@@ -984,12 +984,11 @@ class Administrator(Cog):
             await ctx.send(embed=emb)
         else:
             role_ids = self.autoroles[ctx.guild.id]
-            print(role_ids)
             d = ""
             i = 1
             for r_id in role_ids:
                 try:
-                    r = ctx.get_role(int(r_id))
+                    r = ctx.guild.get_role(int(r_id))
                     d += f"`{i}` {r.mention}\n"
                     i += 1
                 except:
