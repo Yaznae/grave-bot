@@ -38,7 +38,7 @@ class Administrator(Cog):
                     pass
                 else:
                     roles = [member.guild.get_role(int(r)) for r in self.autoroles[member.guild.id]]
-                    await member.add_roles(roles)
+                    await member.add_roles(*roles)
 
             try:
                 c_conv = TextChannelConverter()
@@ -147,7 +147,10 @@ class Administrator(Cog):
                 await c.send(msg, embed=welcome_embed)
             except:
                 welcome_embed = Embed.from_dict(embed["embed"])
-                await c.send(embed=welcome_embed)
+                try:
+                    await c.send(embed=welcome_embed)
+                except:
+                    return
 
     @Cog.listener()
     async def on_member_update(self, before, after):
