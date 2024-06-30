@@ -985,6 +985,7 @@ class Administrator(Cog):
             await ctx.send(embed=emb)
         else:
             role_ids = self.autoroles[ctx.guild.id]
+            print(role_ids)
             d = ""
             i = 1
             for r_id in role_ids:
