@@ -6,8 +6,8 @@ import random
 from typing import Optional
 from pymongo import MongoClient
 from discord import Embed, Button, ButtonStyle, Interaction, Color
-from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, Command
-from discord.ext.commands import TextChannelConverter, ColourConverter, TextChannelConverter
+from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, Command, check
+from discord.ext.commands import TextChannelConverter, ColourConverter, TextChannelConverter, RoleConverter
 from discord.ui import View, button
 
 class Administrator(Cog):
@@ -17,6 +17,13 @@ class Administrator(Cog):
         self.bot = bot
         self.mongo = MongoClient(os.environ['MONGO_URI']).get_database('info')
         self.config = config
+        self.autoroles = {}
+
+        for d in self.mongo.get_collection("servers"):
+            try:
+                self.autoroles.update({ int(d["guild_id"]): d["autoroles"] })
+            except KeyError:
+                continue
 
     @Cog.listener()
     async def on_member_join(self, member):
@@ -26,6 +33,13 @@ class Administrator(Cog):
         if not check or not check2 or "welcome" not in check.keys():
             return
         else:
+            if member.guild.id in self.autoroles.keys():
+                if not self.autoroles[member.guild.id]:
+                    pass
+                else:
+                    roles = [member.guild.get_role(int(r)) for r in self.autoroles[member.guild.id]]
+                    await member.add_roles(roles)
+
             try:
                 c_conv = TextChannelConverter()
                 c = self.bot.get_channel(int(check["welcome"]["channel_id"]))
@@ -76,8 +90,8 @@ class Administrator(Cog):
                 try:
                     await c.send(embed=welcome_embed)
                 except:
-                    return
-
+                    pass
+        
     @Cog.listener()
     async def on_member_remove(self, member):
         check = self.mongo.get_collection('servers').find_one({ "guild_id": f"{member.guild.id}" })
@@ -219,6 +233,11 @@ class Administrator(Cog):
         if g.icon:
             emb.set_thumbnail(url=g.icon.url)
         await c.send(embed=emb)
+
+    def guild_owner_only():
+        async def predicate(ctx):
+            return ctx.author == ctx.guild.owner
+        return check(predicate)
 
     @group(name="embed", description="manipulate **embeds** .", invoke_without_command=True)
     @guild_only()
@@ -916,6 +935,71 @@ class Administrator(Cog):
             await ctx.guild.edit(vanity_code=vanity)
             emb.description = f"{ctx.author.mention}: set **server vanity url** to: `{name}`"
         await ctx.send(embed=emb)
+
+    @group(name="autorole", description="manage autoroling new members .", invoke_without_command=True)
+    @guild_only()
+    @guild_owner_only()
+    async def autorole_group(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.bot.get_command('help'), command="autorole")
+
+    @command(name="addrole", aliases=["add"], description="add role to autorole new members .")
+    @guild_only()
+    @guild_owner_only()
+    async def autorole_addrole(self, ctx, role):
+        r_conv = RoleConverter()
+        r = await r_conv.convert(ctx, role)
+        emb = Embed(color=0x2b2d31)
+
+        try:
+            ar_list = self.autoroles[ctx.guild.id]
+            if str(r.id) in ar_list:
+                emb.description = f"{ctx.author.mention}: {r.mention} is already added to **autorole list** ."
+            else:
+                ar_list.append(str(r.id))
+                self.autoroles.update({ ctx.guild.id: ar_list })
+                self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": ar_list } })
+                emb.description = f"{ctx.author.mention}: added {r.mention} to **autorole list** ."
+            await ctx.send(embed=emb)
+        except KeyError:
+            self.autoroles.update({ ctx.guild.id: [str(r.id)] })
+            if not self.mongo.get_collection("servers").find_one({ "guild_id": str(ctx.guild.id) }):
+                self.mongo.get_collection("servers").insert_one({ "guild_id": str(ctx.guild.id), "autoroles": [str(r.id)] })
+            else:
+                self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": [str(r.id)] } })
+            emb.description = f"{ctx.author.mention}: added {r.mention} to **autorole list** ."
+            await ctx.send(embed=emb)
+
+    @command(name="listroles", aliases=["list"], description="list all autoroles for this server .")
+    @guild_only()
+    @guild_owner_only()
+    async def list_roles(self, ctx):
+        r_conv = RoleConverter()
+        emb = Embed(color=0x2b2d31)
+
+        if ctx.guild.id not in self.autoroles.keys():
+            emb.description = f"{ctx.author.mention}: there are **no roles** in **autorole list** ."
+            await ctx.send(embed=emb)
+        elif not self.autoroles[ctx.guild.id]:
+            emb.description = f"{ctx.author.mention}: there are **no roles** in **autorole list** ."
+            await ctx.send(embed=emb)
+        else:
+            role_ids = self.autoroles[ctx.guild.id]
+            d = ""
+            i = 1
+            for r_id in role_ids:
+                try:
+                    r = ctx.get_role(int(r_id))
+                    d += f"`{i}` {r.mention}\n"
+                    i += 1
+                except:
+                    role_ids.remove(r_id)
+                    self.autoroles.update({ ctx.guild.id: role_ids })
+                    self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": role_ids } })
+            
+            emb.set_author(name="list of autoroles :")
+            emb.description = d
+            await ctx.send(embed=emb)
 
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):

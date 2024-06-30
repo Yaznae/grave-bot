@@ -12,6 +12,7 @@ class Fun(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
+        if not message.guild: return
         
         if message.guild.id in self.su_list.keys():
             su_list = self.su_list[message.guild.id]
