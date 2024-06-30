@@ -998,6 +998,24 @@ class Administrator(Cog):
                 emb.description = f"{ctx.author.mention}: removed {r.mention} from **autorole list** ."
             await ctx.send(embed=emb)
 
+    @autorole_group.command(name="removeall", description="remove all roles from autorole list .")
+    @guild_only()
+    @guild_owner_only()
+    async def removeall_roles(self, ctx):
+        emb = Embed(color=0x2b2d31)
+
+        if ctx.guild.id not in self.autoroles.keys():
+            emb.description = f"{ctx.author.mention}: there are **no roles** in **autorole list** ."
+            await ctx.send(embed=emb)
+        elif not self.autoroles[ctx.guild.id]:
+            emb.description = f"{ctx.author.mention}: there are **no roles** in **autorole list** ."
+            await ctx.send(embed=emb)
+        else:
+            self.autoroles.pop(ctx.guild.id)
+            self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$unset": { "autoroles": "" } })
+            emb.description = f"{ctx.author.mention}: removed **all roles** from **autorole list** ."
+            await ctx.send(embed=emb)
+
     @autorole_group.command(name="listroles", aliases=["list"], description="list all autoroles for this server .")
     @guild_only()
     @guild_owner_only()
