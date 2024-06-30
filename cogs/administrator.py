@@ -946,7 +946,7 @@ class Administrator(Cog):
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.bot.get_command('help'), command="autorole")
 
-    @autorole_group.command(name="addrole", aliases=["add"], description="add role to autorole new members .")
+    @autorole_group.command(name="addrole", aliases=["add"], description="add role to autorole list .")
     @guild_only()
     @guild_owner_only()
     async def autorole_addrole(self, ctx, role):
@@ -971,6 +971,31 @@ class Administrator(Cog):
             else:
                 self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": [str(r.id)] } })
             emb.description = f"{ctx.author.mention}: added {r.mention} to **autorole list** ."
+            await ctx.send(embed=emb)
+
+    @autorole_group.command(name="removerole", aliases=["remove"], description="remove role from autorole list .")
+    @guild_only()
+    @guild_owner_only()
+    async def remove_role(self, ctx, role):
+        r_conv = RoleConverter()
+        r = await r_conv.convert(ctx, role)
+        emb = Embed(color=0x2b2d31)
+
+        if ctx.guild.id not in self.autoroles.keys():
+            emb.description = f"{ctx.author.mention}: there are **no roles** in **autorole list** ."
+            await ctx.send(embed=emb)
+        elif not self.autoroles[ctx.guild.id]:
+            emb.description = f"{ctx.author.mention}: there are **no roles** in **autorole list** ."
+            await ctx.send(embed=emb)
+        else:
+            role_ids = self.autoroles[ctx.guild.id]
+            if str(r.id) not in role_ids:
+                emb.description = f"{ctx.author.mention}: {r.mention} is not added to **autorole list** ."
+            else:
+                role_ids.remove(str(r.id))
+                self.autoroles.update({ ctx.guild.id: role_ids })
+                self.mongo.get_collection("servers").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "autoroles": role_ids } })
+                emb.description = f"{ctx.author.mention}: removed {r.mention} from **autorole list** ."
             await ctx.send(embed=emb)
 
     @autorole_group.command(name="listroles", aliases=["list"], description="list all autoroles for this server .")
