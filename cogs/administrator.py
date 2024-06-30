@@ -943,7 +943,7 @@ class Administrator(Cog):
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.bot.get_command('help'), command="autorole")
 
-    @command(name="addrole", aliases=["add"], description="add role to autorole new members .")
+    @autorole_group.command(name="addrole", aliases=["add"], description="add role to autorole new members .")
     @guild_only()
     @guild_owner_only()
     async def autorole_addrole(self, ctx, role):
@@ -970,7 +970,7 @@ class Administrator(Cog):
             emb.description = f"{ctx.author.mention}: added {r.mention} to **autorole list** ."
             await ctx.send(embed=emb)
 
-    @command(name="listroles", aliases=["list"], description="list all autoroles for this server .")
+    @autorole_group.command(name="listroles", aliases=["list"], description="list all autoroles for this server .")
     @guild_only()
     @guild_owner_only()
     async def list_roles(self, ctx):
