@@ -121,9 +121,9 @@ async def on_command_error(ctx, err):
         pass
     elif "The check functions for command blacklist" in str(err):
         return
+    elif str(ctx.author.id) in bot.blacklisted_users:
+        return
     elif isinstance(err, CheckFailure):
-        if str(ctx.author.id) in bot.blacklisted_users:
-            return
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: you lack the **permissions** to use this command:\n`server_owner`"
         await ctx.send(embed=emb)
