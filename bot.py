@@ -7,7 +7,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from colorama import Fore
 from discord import Intents, Embed, Activity, ActivityType, Status
-from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound, CommandNotFound, BotMissingPermissions
+from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound, CommandNotFound, BotMissingPermissions, UserConverter, check
 b = '\033[1m'
 x = '\033[0m'
 
@@ -125,10 +125,63 @@ async def on_command_error(ctx, err):
 
     print(err)
 
+def bot_owner():
+    def predicate(ctx):
+        owners = [931514266815725599, 1084794150320357408, 1191209067335651431]
+        return ctx.author.id in owners
+    return check(predicate)
+
+bot.blacklisted_users = []
+
+@bot.check
+async def check_allowed(ctx):
+    return ctx.author.id not in bot.blacklisted_users
+
+@bot.command(name="blacklist", aliases=['bl'])
+@bot_owner()
+async def blacklist_user(ctx, user):
+    u_conv = UserConverter()
+    u = await u_conv.convert(user)
+    emb = Embed(color=0x2b2d31)
+
+    if u.id in bot.blacklisted_users:
+        emb.description = f"{ctx.author.mention}: {u.mention} is **already blacklisted** from using **grave** ."
+        await ctx.send(embed=emb)
+        return
+
+    bot.blacklisted_users.append(u.id)
+    mongo = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('bot')
+    if not mongo.find_one({ "property": "blacklist" }):
+        mongo.insert_one({ "property": "blacklist", "blacklisted_users": bot.blacklisted_users })
+    else:
+        mongo.find_one_and_update({ "property": "blacklist" }, { "$set": { "blacklisted_users": bot.blacklisted_users } })
+    emb.description = f"{ctx.author.mention}: **blacklisted** {u.mention} from using **grave** ."
+    await ctx.send(embed=emb)
+
+@bot.command(name="unblacklist", aliases=['ubl'])
+@bot_owner()
+async def unblacklist_user(ctx, user):
+    u_conv = UserConverter()
+    u = await u_conv.convert(user)
+    emb = Embed(color=0x2b2d31)
+
+    if u.id not in bot.blacklisted_users:
+        emb.description = f"{ctx.author.mention}: {u.mention} is **not blacklisted** from using **grave** ."
+        await ctx.send(embed=emb)
+        return
+
+    bot.blacklisted_users.remove(u.id)
+    mongo = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('bot')
+    if not mongo.find_one({ "property": "blacklist" }):
+        mongo.insert_one({ "property": "blacklist", "blacklisted_users": bot.blacklisted_users })
+    else:
+        mongo.find_one_and_update({ "property": "blacklist" }, { "$set": { "blacklisted_users": bot.blacklisted_users } })
+    emb.description = f"{ctx.author.mention}: **allowed** {u.mention} to use **grave** ."
+    await ctx.send(embed=emb)
+
 @bot.command(name="leave")
+@bot_owner()
 async def leave_server(ctx, server_id):
-    owners = [931514266815725599, 1191209067335651431]
-    if ctx.author.id not in owners: return
     try:
         g = await bot.fetch_guild(server_id)
     except:
