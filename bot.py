@@ -119,12 +119,12 @@ async def on_command_error(ctx, err):
         await ctx.send(embed=emb)
     elif isinstance(err, CommandNotFound):
         pass
+    elif "The check functions for command blacklist" in str(err):
+        return
     elif isinstance(err, CheckFailure):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: you lack the **permissions** to use this command:\n`server_owner`"
         await ctx.send(embed=emb)
-    elif "The check functions for command blacklist" in str(err):
-        return
     elif "Unknown Message" in str(err):
         print('oops')
     else:
