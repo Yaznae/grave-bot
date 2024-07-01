@@ -127,7 +127,7 @@ async def on_command_error(ctx, err):
 
 def bot_owner():
     def predicate(ctx):
-        owners = [931514266815725599, 1084794150320357408, 1191209067335651431]
+        owners = [931514266815725599, 1191209067335651431]
         return ctx.author.id in owners
     return check(predicate)
 
