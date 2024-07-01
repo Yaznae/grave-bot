@@ -137,7 +137,7 @@ async def on_command_error(ctx, err):
 
 def bot_owner():
     def predicate(ctx):
-        owners = [931514266815725599, 1191209067335651431]
+        owners = [931514266815725599, 1191209067335651431, 1084794150320357408]
         return ctx.author.id in owners
     return check(predicate)
 
@@ -149,8 +149,13 @@ async def check_allowed(ctx):
 @bot_owner()
 async def blacklist_user(ctx, user):
     u_conv = UserConverter()
-    u = await u_conv.convert(user)
+    u = await u_conv.convert(ctx, user)
     emb = Embed(color=0x2b2d31)
+
+    owners = [931514266815725599, 1191209067335651431, 1084794150320357408]
+    if u.id in owners:
+        await ctx.send('stfu')
+        return
 
     if str(u.id) in bot.blacklisted_users:
         emb.description = f"{ctx.author.mention}: {u.mention} is **already blacklisted** from using **grave** ."
@@ -170,7 +175,7 @@ async def blacklist_user(ctx, user):
 @bot_owner()
 async def unblacklist_user(ctx, user):
     u_conv = UserConverter()
-    u = await u_conv.convert(user)
+    u = await u_conv.convert(ctx, user)
     emb = Embed(color=0x2b2d31)
 
     if str(u.id) not in bot.blacklisted_users:
