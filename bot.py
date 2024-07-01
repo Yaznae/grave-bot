@@ -27,6 +27,7 @@ def get_prefix(bot, msg):
 intents = Intents.all()
 cogs = [cog[:-3] for cog in os.listdir('cogs') if cog.endswith('.py')]
 bot = Bot(command_prefix=get_prefix, intents=intents, help_command=None)
+bot.blacklisted_users = []
 
 @bot.event
 async def on_ready():
@@ -36,6 +37,13 @@ async def on_ready():
     for d in c:
         try:
             config["custom_prefix"].update({ d["guild_id"]: d["prefix"] })
+        except:
+            pass
+    c2 = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('bot').find({})
+    for d in c2:
+        try:
+            blacklisted = d["blacklisted_users"]
+            bot.blacklisted_users = blacklisted
         except:
             pass
     with open('./config.json', 'w') as f:
@@ -131,11 +139,9 @@ def bot_owner():
         return ctx.author.id in owners
     return check(predicate)
 
-bot.blacklisted_users = []
-
 @bot.check
 async def check_allowed(ctx):
-    return ctx.author.id not in bot.blacklisted_users
+    return str(ctx.author.id) not in bot.blacklisted_users
 
 @bot.command(name="blacklist", aliases=['bl'])
 @bot_owner()
@@ -144,12 +150,12 @@ async def blacklist_user(ctx, user):
     u = await u_conv.convert(user)
     emb = Embed(color=0x2b2d31)
 
-    if u.id in bot.blacklisted_users:
+    if str(u.id) in bot.blacklisted_users:
         emb.description = f"{ctx.author.mention}: {u.mention} is **already blacklisted** from using **grave** ."
         await ctx.send(embed=emb)
         return
 
-    bot.blacklisted_users.append(u.id)
+    bot.blacklisted_users.append(str(u.id))
     mongo = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('bot')
     if not mongo.find_one({ "property": "blacklist" }):
         mongo.insert_one({ "property": "blacklist", "blacklisted_users": bot.blacklisted_users })
@@ -165,12 +171,12 @@ async def unblacklist_user(ctx, user):
     u = await u_conv.convert(user)
     emb = Embed(color=0x2b2d31)
 
-    if u.id not in bot.blacklisted_users:
+    if str(u.id) not in bot.blacklisted_users:
         emb.description = f"{ctx.author.mention}: {u.mention} is **not blacklisted** from using **grave** ."
         await ctx.send(embed=emb)
         return
 
-    bot.blacklisted_users.remove(u.id)
+    bot.blacklisted_users.remove(str(u.id))
     mongo = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('bot')
     if not mongo.find_one({ "property": "blacklist" }):
         mongo.insert_one({ "property": "blacklist", "blacklisted_users": bot.blacklisted_users })
