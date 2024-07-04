@@ -30,7 +30,7 @@ class Info(Cog):
         emb.description = f"thank you for inviting **grave** . use `$help` for a list of commands ."
         await c.send(embed=emb)
 
-    @command(name="userinfo", aliases=["uinfo", "info", "ui"], description="shows information about a user .")
+    @command(name="userinfo", aliases=["uinfo", "info", "ui", "whois"], description="shows information about a user .")
     @guild_only()
     async def user_info(self, ctx, user: Optional[str]):
         if user:
@@ -67,7 +67,7 @@ class Info(Cog):
                 desc += "<:certified_moderator:1253743368295546971>"    
             if ctx.guild.get_member(u.id) and ctx.guild.get_member(u.id).premium_since:
                 desc += "<:boost:1253734600547631177>"   
-            data = MongoClient(os.environ["MONGO_URI"]).get_database('lastfm').get_collection("users").find_one({ "username": u.name })
+            data = MongoClient(os.environ["MONGO_URI"]).get_database('lastfm').get_collection("users").find_one({ "user_id": str(u.id) })
             if data:
                 lfm_user = data["lastfm_user"]
                 r = requests.get(f"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={lfm_user}&api_key={os.environ['LASTFM_API']}&limit=1&format=json").json()["recenttracks"]["track"][0]
