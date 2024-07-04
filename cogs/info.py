@@ -48,25 +48,25 @@ class Info(Cog):
             u = await self.bot.fetch_user(u.id)
 
             if u.banner or u.accent_color:
-                desc += "<:nitro:1253734539927355473>"
+                desc += "<:nitro:1253734539927355473> "
             if u.public_flags.hypesquad_bravery:
-                desc += "<:bravery:1253741810233376829>"
+                desc += "<:bravery:1253741810233376829> "
             if u.public_flags.hypesquad_balance:
-                desc += "<:balance:1253742648951308389>"
+                desc += "<:balance:1253742648951308389> "
             if u.public_flags.hypesquad_brilliance:
-                desc += "<:brilliance:1253742487948886177>"
+                desc += "<:brilliance:1253742487948886177> "
             if u.public_flags.active_developer:
-                desc += "<:active_developer:1253742788290281564>"
+                desc += "<:active_developer:1253742788290281564> "
             if u.public_flags.early_supporter:
-                desc += "<:early_supporter:1253743729718857758>"
+                desc += "<:early_supporter:1253743729718857758> "
             if u.public_flags.bug_hunter:
-                desc += "<:bughunter:1253743172790648913>"
+                desc += "<:bughunter:1253743172790648913> "
             if u.public_flags.bug_hunter_level_2:
-                desc += "<:bughunter_level2:1253743207662223481>"
+                desc += "<:bughunter_level2:1253743207662223481> "
             if u.public_flags.discord_certified_moderator:
-                desc += "<:certified_moderator:1253743368295546971>"    
+                desc += "<:certified_moderator:1253743368295546971> "    
             if ctx.guild.get_member(u.id) and ctx.guild.get_member(u.id).premium_since:
-                desc += "<:boost:1253734600547631177>"   
+                desc += "<:boost:1253734600547631177> "   
             data = MongoClient(os.environ["MONGO_URI"]).get_database('lastfm').get_collection("users").find_one({ "user_id": str(u.id) })
             if data:
                 lfm_user = data["lastfm_user"]
