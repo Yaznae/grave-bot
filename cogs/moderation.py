@@ -48,9 +48,9 @@ class Moderation(Cog):
         if member.roles:
             roles = [r for r in member.roles if r.name != "@everyone"]
             try:
-                self.role_cache[member.guild.id].update({ member.name: roles })
+                self.role_cache[member.guild.id].update({ member.id: roles })
             except KeyError:
-                self.role_cache.update({ member.guild.id: { member.name: roles } })
+                self.role_cache.update({ member.guild.id: { member.id: roles } })
         else:
             return
 
@@ -117,7 +117,7 @@ class Moderation(Cog):
 
         try:
             s_roles = self.role_cache[ctx.guild.id]
-            m_roles = s_roles[m.name]
+            m_roles = s_roles[m.id]
         except KeyError:
             emb.description = f"{ctx.author.mention}: {m.mention} has no **cached roles** ."
             await ctx.send(embed=emb)
@@ -126,11 +126,11 @@ class Moderation(Cog):
         if m_roles:
             emb.description = f"{ctx.author.mention}: restoring **roles** for {m.mention} ..."
             msg = await ctx.send(embed=emb)
-            for r in self.role_cache[ctx.guild.id][m.name]:
+            for r in self.role_cache[ctx.guild.id][m.id]:
                 await m.add_roles(r)
             emb.description = f"{ctx.author.mention}: **restored** the following **roles** for {m.mention}:\n<@&{'>, <@&'.join([str(r.id) for r in self.role_cache[m.name]])}>"
             await msg.edit(embed=emb)
-            self.role_cache[ctx.guild.id].pop(m.name)
+            self.role_cache[ctx.guild.id].pop(m.id)
 
     @role.command(name='mentionable', description="toggles **mentionability** of a role .")
     @guild_only()
