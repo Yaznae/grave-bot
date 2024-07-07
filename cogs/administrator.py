@@ -1054,10 +1054,9 @@ class Administrator(Cog):
             c_conv = GuildChannelConverter()
             emb = Embed(color=0x2b2d31)
             try:
-                cmd = bot.get_command(command)
+                cmd = self.bot.get_command(command)
                 cmd_name = cmd.root_parent if cmd.root_parent else cmd.name
-            except Exception as e:
-                print(e)
+            except:
                 emb.description = f"{ctx.author.mention}: that **command** does not exist ."
                 await ctx.send(embed=emb)
                 return
@@ -1090,7 +1089,7 @@ class Administrator(Cog):
             c_conv = GuildChannelConverter()
             emb = Embed(color=0x2b2d31)
             try:
-                cmd = bot.get_command(command)
+                cmd = self.bot.get_command(command)
                 cmd_name = cmd.root_parent if cmd.root_parent else cmd.name
             except:
                 emb.description = f"{ctx.author.mention}: that **command** does not exist ."
