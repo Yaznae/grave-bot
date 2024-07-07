@@ -273,7 +273,7 @@ class Info(Cog):
         else:
             names = check["usernames"]
             emb.set_author(name=f"{u.name}'s username history :", icon_url=u.display_avatar.url)
-            await Buttons(ctx, emb, names, "indexes").start()
+            await NameHistory(ctx, emb, names).start()
         
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):
@@ -321,6 +321,84 @@ class Buttons(View):
             count += 1
         self.embed.description = d
         self.embed.set_footer(text=f"page 1/{self.total_pages} ({len(self.iterable)} {self.whatever})")
+
+        if self.total_pages == 1:
+            self.reply = await self.ctx.send(embed=self.embed)
+        else:
+            self.reply = await self.ctx.send(embed=self.embed, view=self)
+
+    @button(emoji='<:skipleft:1256399619361869864>', style=ButtonStyle.gray)
+    async def first(self, intr: Interaction, button: Button):
+        self.index = 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:left:1256399617436946442>', style=ButtonStyle.gray)
+    async def left(self, intr: Interaction, button: Button):
+        self.index -= 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:right:1256399615692111982>', style=ButtonStyle.gray)
+    async def right(self, intr: Interaction, button: Button):
+        self.index += 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:skipright:1256399621673193634>', style=ButtonStyle.gray)
+    async def last(self, intr: Interaction, button: Button):
+        self.index = self.total_pages
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    async def on_timeout(self):
+        await self.reply.edit(view=None)
+
+class NameHistory(View):
+    def __init__(self, ctx, embed, iterable):
+        self.index = 1
+        self.ctx = ctx
+        self.embed = embed
+        self.iterable = iterable
+        self.total_pages = math.ceil(len(iterable)/10)
+        super().__init__(timeout=120)
+
+    async def interaction_check(self, intr: Interaction) -> bool:
+        if intr.user == self.ctx.author:
+            return True
+        else:
+            emb = Embed(color=0x2b2d31, description=f"{intr.user.mention}: you are not the **author** of this command .")
+            await intr.response.send_message(embed=emb, ephemeral=True)
+            return False
+
+    async def edit_page(self, reply):
+        i = self.index
+        n_list = self.iterable[(i-1)*10:i*10]
+        d = ''
+        count = ((i-1)*10) + 1
+        for n in n_list:
+            d += f"`{count}:` {n}\n"
+            count += 1
+        self.embed.description = d
+        self.embed.set_footer(text=f"page {self.index}/{self.total_pages} ({len(self.iterable)} indexes)")
+        self.update_buttons()
+        await reply.edit(embed=self.embed, view=self)
+
+    def update_buttons(self):
+        self.children[0].disabled = bool(self.index == 1)
+        self.children[1].disabled = bool(self.index == 1)
+        self.children[2].disabled = bool(self.index == self.total_pages)
+        self.children[3].disabled = bool(self.index == self.total_pages)
+
+    async def start(self):
+        n_list = self.iterable[:10]
+        d = ''
+        count = 1
+        for n in n_list:
+            d += f"`{count}:` {n}\n"
+            count += 1
+        self.embed.description = d
+        self.embed.set_footer(text=f"page 1/{self.total_pages} ({len(self.iterable)} indexes)")
 
         if self.total_pages == 1:
             self.reply = await self.ctx.send(embed=self.embed)
