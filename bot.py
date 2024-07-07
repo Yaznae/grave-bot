@@ -6,7 +6,8 @@ from pymongo import MongoClient
 from typing import Optional
 from dotenv import load_dotenv
 from colorama import Fore
-from discord import Intents, Embed, Activity, ActivityType, Status
+from discord import Intents, Embed, Activity, ActivityType, Status, ButtonStyle, Button, Interaction
+from discord.ui import View, button
 from discord.ext.commands import when_mentioned_or, Bot, MissingPermissions, MissingRequiredArgument, CommandOnCooldown, MemberNotFound, RoleNotFound, BadColourArgument, UserNotFound, ChannelNotFound, CommandNotFound, BotMissingPermissions, UserConverter, check, CheckFailure
 b = '\033[1m'
 x = '\033[0m'
@@ -168,7 +169,17 @@ async def check_disabled(ctx):
 async def check_allowed(ctx):
     return str(ctx.author.id) not in bot.blacklisted_users
 
-@bot.command(name="blacklist", aliases=['bl'])
+@bot.command(name="clearnames", aliases='cnames', description="clear your name history .")
+async def clear_nhistory(ctx):
+    emb = Embed(color=0x2b2d31)
+    check = MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("namehistory").find_one({ "user_id": str(ctx.author.id) })
+    if not check:
+        emb.description = f"{ctx.author.mention}: your **name history** is already **cleared** ."
+        await ctx.send(embed=emb)
+    else:
+        await ClearNamesConfirmation(ctx).start()
+
+@bot.command(name="blacklist", aliases=['bl'], description="blacklist user from using the bot .")
 @bot_owner()
 async def blacklist_user(ctx, user):
     u_conv = UserConverter()
@@ -194,7 +205,7 @@ async def blacklist_user(ctx, user):
     emb.description = f"{ctx.author.mention}: **blacklisted** {u.mention} from using **grave** ."
     await ctx.send(embed=emb)
 
-@bot.command(name="unblacklist", aliases=['ubl'])
+@bot.command(name="unblacklist", aliases=['ubl'], description="allows user to use the bot .")
 @bot_owner()
 async def unblacklist_user(ctx, user):
     u_conv = UserConverter()
@@ -215,7 +226,7 @@ async def unblacklist_user(ctx, user):
     emb.description = f"{ctx.author.mention}: **allowed** {u.mention} to use **grave** ."
     await ctx.send(embed=emb)
 
-@bot.command(name="leave")
+@bot.command(name="leave", description="leave a server .")
 @bot_owner()
 async def leave_server(ctx, server_id):
     try:
@@ -223,9 +234,9 @@ async def leave_server(ctx, server_id):
     except:
         return
     await g.leave()
-    await ctx.message.add_reaction("✅")
+    await ctx.message.add_reaction("<:check:1256405259442716903>")
 
-@bot.command()
+@bot.command(name="help", description="shows this prompt .")
 async def help(ctx, *, command: Optional[str]):
     with open('./config.json') as f:
         config = json.load(f)
@@ -287,6 +298,42 @@ async def reload(ctx, cog):
         print(e)
         emb.description = f"{ctx.author.mention}: `{cog}.py` does not exist ."
     await ctx.send(embed=emb)
+
+class ClearNamesConfirmation(View):
+    def __init__(self, ctx, channel):
+        self.ctx = ctx
+        self.emb = Embed(color=0x2b2d31)
+        self.message = None
+        super().__init__(timeout=15)
+
+    async def interaction_check(self, intr: Interaction) -> bool:
+        if intr.user == self.ctx.author:
+            return True
+        else:
+            emb = Embed(color=0x2b2d31, description=f"{intr.user.mention}: you are not the **author** of this command .")
+            await intr.response.send_message(embed=emb, ephemeral=True)
+            return False
+
+    async def start(self):
+        self.emb.description = f"{self.ctx.author.mention}: are you sure you want to **clear** your **name history** ?"
+        self.message = await self.ctx.send(embed=self.emb, view=self)
+
+    @button(emoji='<:check:1256405259442716903>', style=ButtonStyle.gray)
+    async def first(self, intr: Interaction, button: Button):
+        await intr.response.defer()
+        MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("namehistory").find_one_and_delete({ "user_id": str(intr.user.id) })
+        emb.description = f"{ctx.author.mention}: **cleared** your **name history** ."
+        await self.message.edit(embed=self.emb, view=None)
+
+    @button(emoji='<:cancel:1256397856995283035>', style=ButtonStyle.red)
+    async def cancel(self, intr: Interaction, button: Button):
+        await intr.response.defer()
+        self.emb.description = f"{intr.user.mention}: cancelled **name history clearing** ."
+        await self.message.edit(embed=self.emb, view=None)
+
+    async def on_timeout(self):
+        self.emb.description = f"{intr.user.mention}: cancelled **name history clearing** ."
+        await self.message.edit(embed=self.emb, view=None)
 
 keep_alive()
 bot.run(os.environ['TOKEN'])
