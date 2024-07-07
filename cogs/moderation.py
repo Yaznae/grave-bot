@@ -535,6 +535,10 @@ class Moderation(Cog):
         if m == ctx.guild.me:
             await ctx.send('tf i do')
             return
+        elif m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+            await ctx.send(embed=emb)
+            return
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: that user is **higher** than you .")
             await ctx.send(embed=emb)
@@ -562,6 +566,10 @@ class Moderation(Cog):
         if u == self.bot.user:
             await ctx.send('tf i do')
             return
+        elif u == ctx.author or u == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+            await ctx.send(embed=emb)
+            return
         elif ctx.guild.get_member(u.id) is not None and ctx.guild.get_member(u.id).top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: that user is **higher** than you .")
             await ctx.send(embed=emb)
@@ -578,6 +586,10 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         if m == ctx.guild.me:
             await ctx.send('tf i do')
+            return
+        elif m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+            await ctx.send(embed=emb)
             return
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: that user is **higher** than you .")
@@ -659,15 +671,22 @@ class Moderation(Cog):
         else:
             d = None
 
-        if bool(ctx.channel.permissions_for(m).send_messages):
-            if d:
-                self.temp_mute.start(ctx.channel, m, d.seconds)
-                emb.description = f"{ctx.author.mention}: muted {m.mention} for **{d.to_humanreadable(style='short')}** ."
-            else:
-                await ctx.channel.set_permissions(m, send_messages=False)
-                emb.description = f"{ctx.author.mention}: **muted** {m.mention} ."
+        if m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
         else:
-            emb.description = f"{ctx.author.mention}: {m.mention} is **already muted** ."
+            if bool(ctx.channel.permissions_for(m).send_messages):
+                if d:
+                    self.temp_mute.start(ctx.channel, m, d.seconds)
+                    emb.description = f"{ctx.author.mention}: muted {m.mention} for **{d.to_humanreadable(style='short')}** ."
+                else:
+                    await ctx.channel.set_permissions(m, send_messages=False)
+                    emb.description = f"{ctx.author.mention}: **muted** {m.mention} ."
+            else:
+                emb.description = f"{ctx.author.mention}: {m.mention} is **already muted** in this channel ."
         await ctx.send(embed=emb)
 
     @command(name='unmute', description="removes **mute** from a user .")
@@ -679,11 +698,18 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        if bool(ctx.channel.permissions_for(m).send_messages):
-            emb.description = f"{ctx.author.mention}: {m.mention} is **not muted** ."
+        if m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
         else:
-            await ctx.channel.set_permissions(m, send_messages=True)
-            emb.description = f"{ctx.author.mention}: **unmuted** {m.mention} ."
+            if bool(ctx.channel.permissions_for(m).send_messages):
+                emb.description = f"{ctx.author.mention}: {m.mention} is **not muted** ."
+            else:
+                await ctx.channel.set_permissions(m, send_messages=True)
+                emb.description = f"{ctx.author.mention}: **unmuted** {m.mention} ."
         await ctx.send(embed=emb)
 
     @command(name='timeout', description="**mutes** a user .")
@@ -695,18 +721,26 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        try:
-            d = hr.Time(duration)
-        except:
-            emb.description = f"{ctx.author.mention}: invalid **duration** ."
-            await ctx.send(embed=emb)
-            return
-
-        if not bool(m.is_timed_out()):
-            await m.timeout(timedelta(seconds=d.seconds))
-            emb.description = f"{ctx.author.mention}: **timed out** {m.mention} for **{d.to_humanreadable(style='short')}** ."
+        if m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
         else:
-            emb.description = f"{ctx.author.mention}: {m.mention} is **already timed out** ."
+
+            try:
+                d = hr.Time(duration)
+            except:
+                emb.description = f"{ctx.author.mention}: invalid **duration** ."
+                await ctx.send(embed=emb)
+                return
+
+            if not bool(m.is_timed_out()):
+                await m.timeout(timedelta(seconds=d.seconds))
+                emb.description = f"{ctx.author.mention}: **timed out** {m.mention} for **{d.to_humanreadable(style='short')}** ."
+            else:
+                emb.description = f"{ctx.author.mention}: {m.mention} is **already timed out** ."
         await ctx.send(embed=emb)
 
     @command(name='imute', description="removes **embed links** and **attach files** permissions from a user .")
@@ -719,11 +753,18 @@ class Moderation(Cog):
         emb = Embed(color=0x2b2d31)
         perms = ctx.channel.permissions_for(m)
 
-        if bool(perms.attach_files) or bool(perms.embed_links):
-            await ctx.channel.set_permissions(m, attach_files=False, embed_links=False)
-            emb.description = f"{ctx.author.mention}: removed **file sending** permissions from {m.mention} ."
+        if m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
         else:
-            emb.description = f"{ctx.author.mention}: {m.mention} is already **imuted** ."
+            if bool(perms.attach_files) or bool(perms.embed_links):
+                await ctx.channel.set_permissions(m, attach_files=False, embed_links=False)
+                emb.description = f"{ctx.author.mention}: removed **file sending** permissions from {m.mention} ."
+            else:
+                emb.description = f"{ctx.author.mention}: {m.mention} is already **imuted** ."
         await ctx.send(embed=emb)
 
     @command(name='iunmute', aliases=['iumute'], description="restores **embed links** and **attach files** permissions to the user .")
@@ -736,11 +777,18 @@ class Moderation(Cog):
         emb = Embed(color=0x2b2d31)
         perms = ctx.channel.permissions_for(m)
 
-        if bool(perms.attach_files) or bool(perms.embed_links):
-            emb.description = f"{ctx.author.mention}: {m.mention} is **not imuted** ."
+        if m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
         else:
-            await ctx.channel.set_permissions(m, embed_links=True, attach_files=True)
-            emb.description = f"{ctx.author.mention}: restored **file sending** permissions to {m.mention} ."
+            if bool(perms.attach_files) or bool(perms.embed_links):
+                emb.description = f"{ctx.author.mention}: {m.mention} is **not imuted** ."
+            else:
+                await ctx.channel.set_permissions(m, embed_links=True, attach_files=True)
+                emb.description = f"{ctx.author.mention}: restored **file sending** permissions to {m.mention} ."
         await ctx.send(embed=emb)
 
     @group(name='lock', description="**locks** the channel .", invoke_without_command=True)
@@ -1044,7 +1092,9 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        if m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
             await ctx.send(embed=emb)
             return
