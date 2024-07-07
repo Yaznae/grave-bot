@@ -1146,7 +1146,10 @@ class Administrator(Cog):
         else:
             c = ctx.channel
 
-        self.bot.disabled_commands.pop(c.id)
+        try:
+            self.bot.disabled_commands.pop(c.id)
+        except KeyError:
+            pass
         emb.description = f"{ctx.author.mention}: enabled **all commands** in {c.mention} ."
         await ctx.send(embed=emb)
 
