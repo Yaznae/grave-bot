@@ -1073,11 +1073,11 @@ class Administrator(Cog):
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **disabled** in {c.mention} ."
                 else:
                     d_cmds.append(cmd_name)
-                    emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **disabled** in {c.mention} ."
+                    emb.description = f"{ctx.author.mention}: **disabled** `{cmd_name}` in {c.mention} ."
                     print(d_cmds)
             else:
                 self.bot.disabled_commands.update({ c.id: [cmd_name] })
-                emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **disabled** in {c.mention} ."
+                emb.description = f"{ctx.author.mention}: **disabled** `{cmd_name}` in {c.mention} ."
             
             await ctx.send(embed=emb)
 
@@ -1087,10 +1087,18 @@ class Administrator(Cog):
     async def dcmd_all(self, ctx, *, channel: Optional[str]):
         c_conv = GuildChannelConverter()
         emb = Embed(color=0x2b2d31)
+
+        if channel:
+            c = await c_conv.convert(ctx, channel)
+        else:
+            c = ctx.channel
+
         temp_list = []
         for cmd in self.bot.commands:
             temp_list.append(cmd.name)
-        print(temp_list)
+        self.bot.disabled_commands.update({ c.id: temp_list })
+        emb.description = f"{ctx.author.mention}: disabled **all commands** in {c.mention} ."
+        await ctx.send(embed=emb)
 
     @group(name="enablecommand", aliases=["ecmd"], description=f"enables a command for a specific channel .", invoke_without_command=True)
     @guild_only()
@@ -1115,13 +1123,10 @@ class Administrator(Cog):
             if c.id in self.bot.disabled_commands.keys():
                 d_cmds = self.bot.disabled_commands[c.id]
                 if cmd_name not in d_cmds:
-                    print(d_cmds)
-                    print(cmd_name)
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
                 else:
                     d_cmds.remove(cmd_name)
-                    emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **enabled** in {c.mention} ."
-                    print(d_cmds)
+                    emb.description = f"{ctx.author.mention}: **enabled** `{cmd_name}` in {c.mention} ."
             else:
                 emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
             
