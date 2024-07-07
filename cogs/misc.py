@@ -74,7 +74,7 @@ class Miscellaneous(Cog):
             mentions = list(set(msg.mentions))
             for m in mentions:
                 if m.id in self.afk.keys():
-                    time = datetime.now().timestamp() - self.afk[replied.author.id]["timestamp"]
+                    time = datetime.now().timestamp() - self.afk[m.id]["timestamp"]
                     readable = hr.Time(str(math.ceil(time)),default_unit=hr.Time.Unit.SECOND).to_humanreadable()
                     emb = Embed(color=0x2b2d31, description=f"{m.mention} has been **afk** for **{readable}**: `{self.afk[m.id]['reason']}`")
                     await msg.reply(embed=emb)
