@@ -36,7 +36,7 @@ class Info(Cog):
                 curr_history.insert(0, after.nick)
                 name_collection.find_one_and_update({ "user_id": str(after.id) }, { "$set": { "usernames": curr_history } })
             else:
-                name_collection.insert_one({ "user_id": str(after.id), "usernames": [after.nick, before.nick] })
+                name_collection.insert_one({ "user_id": str(after.id), "usernames": [after.nick] })
 
     @Cog.listener()
     async def on_guild_join(self, guild):
