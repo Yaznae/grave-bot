@@ -1178,7 +1178,7 @@ class Administrator(Cog):
             emb.description = f"{ctx.author.mention}: {m.mention} has **no roles** ."
         else:
             roles_removed = []
-            with ctx.channel.typing():
+            async with ctx.channel.typing():
                 for r in m.roles:
                     if r.permissions <= perm_check:
                         await m.remove_roles(r)
