@@ -302,7 +302,7 @@ async def reload(ctx, cog):
     await ctx.send(embed=emb)
 
 class ClearNamesConfirmation(View):
-    def __init__(self, ctx, channel):
+    def __init__(self, ctx):
         self.ctx = ctx
         self.emb = Embed(color=0x2b2d31)
         self.message = None
