@@ -1056,7 +1056,8 @@ class Administrator(Cog):
             try:
                 cmd = bot.get_command(command)
                 cmd_name = cmd.root_parent if cmd.root_parent else cmd.name
-            except:
+            except Exception as e:
+                print(e)
                 emb.description = f"{ctx.author.mention}: that **command** does not exist ."
                 await ctx.send(embed=emb)
                 return
