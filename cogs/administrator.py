@@ -1101,10 +1101,11 @@ class Administrator(Cog):
             else:
                 c = ctx.channel
             
-            if c.id not in self.bot.disabled_commands.keys():
+            if c.id in self.bot.disabled_commands.keys():
                 d_cmds = self.bot.disabled_commands[c.id]
-                print(d_cmds)
                 if cmd_name not in d_cmds:
+                    print(d_cmds)
+                    print(cmd_name)
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
                 else:
                     d_cmds.remove(cmd_name)
