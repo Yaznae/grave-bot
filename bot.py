@@ -77,7 +77,7 @@ async def on_command_error(ctx, err):
         prefix = config['custom_prefix'][str(ctx.guild.id)]
     except Exception as e:
         prefix = config['prefix']
-        
+
     if ctx.command is None: return
     cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
 
@@ -171,7 +171,7 @@ async def check_disabled(ctx):
 async def check_allowed(ctx):
     return str(ctx.author.id) not in bot.blacklisted_users
 
-@bot.command(name="clearnames", aliases='cnames', description="clear your name history .")
+@bot.command(name="clearnames", aliases=['cnames'], description="clear your name history .")
 async def clear_nhistory(ctx):
     emb = Embed(color=0x2b2d31)
     check = MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("namehistory").find_one({ "user_id": str(ctx.author.id) })
