@@ -1026,6 +1026,10 @@ class Moderation(Cog):
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
             await ctx.send(embed=emb)
             return
+        elif m.top_role > ctx.guild.me.top_role:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
+            await ctx.send(embed=emb)
+            return
 
         new_nick = nickname[:32]
         await m.edit(nick=new_nick)
@@ -1042,6 +1046,10 @@ class Moderation(Cog):
 
         if m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+            await ctx.send(embed=emb)
+            return
+        elif m.top_role > ctx.guild.me.top_role:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
             await ctx.send(embed=emb)
             return
 
@@ -1066,6 +1074,10 @@ class Moderation(Cog):
 
         if m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+            await ctx.send(embed=emb)
+            return
+        elif m.top_role > ctx.guild.me.top_role:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
             await ctx.send(embed=emb)
             return
 
