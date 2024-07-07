@@ -1180,7 +1180,8 @@ class Administrator(Cog):
             async with ctx.channel.typing():
                 for r in m.roles:
                     if r.name == "@everyone": continue
-                    r_perms = [key for key, val in dict(iter(r.permissions)) if val == True]
+                    r_perms = dict(iter(r.permissions))
+                    print(r_perms)
                     if any(x in perm_check for x in r_perms):
                         await m.remove_roles(r)
                         roles_removed.append(r.mention)
