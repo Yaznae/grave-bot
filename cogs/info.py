@@ -1,5 +1,5 @@
 import math
-from discord.ext.commands import Cog, command, MemberConverter, UserConverter, guild_only
+from discord.ext.commands import Cog, command, MemberConverter, UserConverter, guild_only, cooldown, BucketType
 from discord import Embed, Button, ButtonStyle, Interaction, TextChannel
 from typing import Optional
 from discord.ui import View, button
@@ -12,6 +12,19 @@ import requests
 class Info(Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.mongo = MongoClient(os.environ["MONGO_URI"]).get_database("info")
+
+    @Cog.listener()
+    async def on_user_update(self, before, after):
+        if before.name != after.name:
+            name_collection = self.mongo.get_collection('namehistory')
+            check = name_collection.find_one({ "user_id": str(after.id) })
+            if check:
+                curr_history = check["usernames"]
+                curr_history.insert(0, after.name)
+                name_collection.find_one_and_update({ "user_id": str(after.id) }, { "$set": { "usernames": curr_history } })
+            else:
+                name_collection.insert_one({ "user_id": str(after.id), "usernames": [after.name, before.name] })
 
     @Cog.listener()
     async def on_guild_join(self, guild):
@@ -241,6 +254,26 @@ class Info(Cog):
         emb.set_author(name=f"{m.name}'s guild avatar :", url=f"{m.guild_avatar.url}")
         emb.set_image(url=m.guild_avatar.url)
         await ctx.send(embed=emb)
+
+    @command(name="names", aliases=["namehistory", "nh"], description="shows a history of usernames .")
+    @cooldown(1, 5, BucketType.user)
+    async def namehistory(self, ctx, user: Optional[str]):
+        emb = Embed(color=0x2b2d31)
+
+        if user:
+            u_conv = UserConverter()
+            u = await u_conv.convert(ctx, user)
+        else:
+            u = ctx.author
+
+        check = self.mongo.get_collection("namehistory").find_one({ "user_id": str(u.id) })
+        if not check:
+            emb.description = f"{u.mention} does not have any **name history** ."
+            await ctx.send(embed=emb)
+        else:
+            names = check["usernames"]
+            emb.set_author(name=f"{u.name}'s username history :", icon_url=u.display_avatar.url)
+            await Buttons(ctx, emb, names, "indexes").start()
         
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):
