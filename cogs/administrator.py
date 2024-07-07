@@ -1066,8 +1066,8 @@ class Administrator(Cog):
             else:
                 c = ctx.channel
             
-            if c.id in bot.disabled_commands.keys():
-                d_cmds = bot.disabled_commands[c.id]
+            if c.id in self.bot.disabled_commands.keys():
+                d_cmds = self.bot.disabled_commands[c.id]
                 print(d_cmds)
                 if cmd_name in d_cmds:
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **disabled** in {c.mention} ."
@@ -1101,8 +1101,8 @@ class Administrator(Cog):
             else:
                 c = ctx.channel
             
-            if c.id not in bot.disabled_commands.keys():
-                d_cmds = bot.disabled_commands[c.id]
+            if c.id not in self.bot.disabled_commands.keys():
+                d_cmds = self.bot.disabled_commands[c.id]
                 print(d_cmds)
                 if cmd_name in d_cmds:
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
