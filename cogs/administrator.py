@@ -1180,8 +1180,9 @@ class Administrator(Cog):
             roles_removed = []
             async with ctx.channel.typing():
                 for r in m.roles:
+                    if r.name == "@everyone": continue
                     if not r.permissions <= perm_check:
-                        print(r.name)
+                        await m.remove_roles(r)
                         roles_removed.append(r.mention)
             if roles_removed:
                 emb.description = f"{ctx.author.mention}: **stripped staff roles** from {m.mention}: {', '.join(roles_removed)}"
