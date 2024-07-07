@@ -1087,7 +1087,9 @@ class Administrator(Cog):
     async def dcmd_all(self, ctx, *, channel: Optional[str]):
         c_conv = GuildChannelConverter()
         emb = Embed(color=0x2b2d31)
-        print(self.bot.commands)
+        temp_list = []
+        for cmd in self.bot.commands:
+            print(cmd.name)
 
     @group(name="enablecommand", aliases=["ecmd"], description=f"enables a command for a specific channel .", invoke_without_command=True)
     @guild_only()
