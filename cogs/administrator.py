@@ -1081,6 +1081,14 @@ class Administrator(Cog):
             
             await ctx.send(embed=emb)
 
+    @dcmd_group.command(name="all", description="disabled all commands in a specific channel .")
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def dcmd_all(self, ctx, *, channel: Optional[str]):
+        c_conv = GuildChannelConverter()
+        emb = Embed(color=0x2b2d31)
+        print(self.bot.commands)
+
     @group(name="enablecommand", aliases=["ecmd"], description=f"enables a command for a specific channel .", invoke_without_command=True)
     @guild_only()
     @has_guild_permissions(administrator=True)
