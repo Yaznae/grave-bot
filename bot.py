@@ -334,7 +334,7 @@ class ClearNamesConfirmation(View):
         await self.message.edit(embed=self.emb, view=None)
 
     async def on_timeout(self):
-        self.emb.description = f"{intr.user.mention}: cancelled **name history clearing** ."
+        self.emb.description = f"{self.ctx.author.mention}: cancelled **name history clearing** ."
         await self.message.edit(embed=self.emb, view=None)
 
 keep_alive()
