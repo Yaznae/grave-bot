@@ -1095,6 +1095,8 @@ class Administrator(Cog):
 
         temp_list = []
         for cmd in self.bot.commands:
+            if cmd.name == "enablecommand" or cmd.name == "disablecommand":
+                continue
             temp_list.append(cmd.name)
         self.bot.disabled_commands.update({ c.id: temp_list })
         emb.description = f"{ctx.author.mention}: disabled **all commands** in {c.mention} ."
