@@ -28,6 +28,7 @@ intents = Intents.all()
 cogs = [cog[:-3] for cog in os.listdir('cogs') if cog.endswith('.py')]
 bot = Bot(command_prefix=get_prefix, intents=intents, help_command=None)
 bot.blacklisted_users = []
+bot.disabled_commands = {}
 
 @bot.event
 async def on_ready():
@@ -85,7 +86,7 @@ async def on_command_error(ctx, err):
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='command help:')
         emb.description = f"*{ctx.command.description}*"
-        emb.add_field(name='usage :', value=f"`{prefix}{ctx.command.qualified_name} {ctx.command.signature}`", inline=False)
+        emb.add_field(name='usage :', value=f"`{prefix}{ctx.command.qualified_name} {ctx.command.signature.replace('<', '[').replace('>', ']')}`", inline=False)
         usage = ctx.command.signature.replace('[member]', '@9ujn').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@9ujn').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@9ujn').replace('<user>', '@9ujn').replace('<nickname>', 'stupid').replace('[nickname]', 'stupid')
         emb.add_field(name='example :', value=f"`{prefix}{ctx.command.qualified_name} {usage}`", inline=False)
         await ctx.send(embed=emb)
@@ -93,7 +94,7 @@ async def on_command_error(ctx, err):
         emb = Embed(color=0x2b2d31)
         emb.set_author(name='command help:')
         emb.description = f"*{ctx.command.description}*"
-        emb.add_field(name='usage :', value=f"`{prefix}{ctx.command.qualified_name} {ctx.command.signature}`", inline=False)
+        emb.add_field(name='usage :', value=f"`{prefix}{ctx.command.qualified_name} {ctx.command.signsignature.replace('<', '[').replace('>', ']')}`", inline=False)
         usage = ctx.command.signature.replace('[member]', '@9ujn').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@9ujn').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@9ujn').replace('<user>', '@9ujn').replace('<nickname>', 'stupid').replace('[nickname]', 'stupid')
         emb.add_field(name='example :', value=f"`{prefix}{ctx.command.qualified_name} {usage}`", inline=False)
         await ctx.send(embed=emb)
@@ -231,12 +232,12 @@ async def help(ctx, *, command: Optional[str]):
 
         if len(cmds) > 1:
             if c.signature:
-                emb.add_field(name="usage:", value=f"`{prefix}{c.name} {c.signature}`", inline=False)
+                emb.add_field(name="usage:", value=f"`{prefix}{c.name} {c.signsignature.replace('<', '[').replace('>', ']')}`", inline=False)
             emb.add_field(name=f"subcommands:", value=f"`{'` ⋅ `'.join(cmds)}`", inline=False)
         else:
             usage = c.signature.replace('[member]', '@9ujn').replace('[role]', 'sped').replace('[color]', '#010101').replace('[prefix]', ';').replace('<member>', '@9ujn').replace('<role>', 'sped').replace('<color>', '#010101').replace('<prefix>', ';').replace('[reason]', 'retarded lol').replace('[duration]', '2m').replace('[user]', '@9ujn').replace('<user>', '@9ujn').replace('<nickname>', 'stupid').replace('[nickname]', 'stupid')
             if c.signature:
-                emb.add_field(name=f"usage :", value=f"`{prefix}{c.name} {c.signature}`", inline=False)
+                emb.add_field(name=f"usage :", value=f"`{prefix}{c.name} {c.signsignature.replace('<', '[').replace('>', ']')}`", inline=False)
                 emb.add_field(name=f"example :", value=f"`{prefix}{c.name} {usage}`", inline=False)
             else:
                 emb.add_field(name=f"usage :", value=f"`{prefix}{c.name}`", inline=False)

@@ -5,9 +5,9 @@ import math
 import random
 from typing import Optional
 from pymongo import MongoClient
-from discord import Embed, Button, ButtonStyle, Interaction, Color
+from discord import Embed, Button, ButtonStyle, Interaction, Color, Member
 from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, Command, check
-from discord.ext.commands import TextChannelConverter, ColourConverter, TextChannelConverter, RoleConverter
+from discord.ext.commands import TextChannelConverter, ColourConverter, GuildChannelConverter, RoleConverter
 from discord.ui import View, button
 
 class Administrator(Cog):
@@ -1044,6 +1044,75 @@ class Administrator(Cog):
             
             emb.set_author(name="list of autoroles :")
             emb.description = d
+            await ctx.send(embed=emb)
+
+    @group(name="disablecommand", aliases=["dcmd"], description=f"disables a command for a specific channel .", invoke_without_command=True)
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def dcmd_group(self, ctx, command, *, channel: Optional[str]):
+        if ctx.invoked_subcommand is None:
+            c_conv = GuildChannelConverter()
+            emb = Embed(color=0x2b2d31)
+            try:
+                cmd = bot.get_command(command)
+                cmd_name = cmd.root_parent if cmd.root_parent else cmd.name
+            except:
+                emb.description = f"{ctx.author.mention}: that **command** does not exist ."
+                await ctx.send(embed=emb)
+                return
+
+            if channel:
+                c = await c_conv.convert(ctx, channel)
+            else:
+                c = ctx.channel
+            
+            if c.id in bot.disabled_commands.keys():
+                d_cmds = bot.disabled_commands[c.id]
+                print(d_cmds)
+                if cmd_name in d_cmds:
+                    emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **disabled** in {c.mention} ."
+                else:
+                    d_cmds.append(cmd_name)
+                    emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **disabled** in {c.mention} ."
+                    print(d_cmds)
+            else:
+                bot.disabled_commands.update({ c.id: [cmd_name] })
+                emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **disabled** in {c.mention} ."
+            
+            await ctx.send(embed=emb)
+
+    @group(name="enablecommand", aliases=["ecmd"], description=f"enables a command for a specific channel .", invoke_without_command=True)
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def ecmd_group(self, ctx, command, *, channel: Optional[str]):
+        if ctx.invoked_subcommand is None:
+            c_conv = GuildChannelConverter()
+            emb = Embed(color=0x2b2d31)
+            try:
+                cmd = bot.get_command(command)
+                cmd_name = cmd.root_parent if cmd.root_parent else cmd.name
+            except:
+                emb.description = f"{ctx.author.mention}: that **command** does not exist ."
+                await ctx.send(embed=emb)
+                return
+
+            if channel:
+                c = await c_conv.convert(ctx, channel)
+            else:
+                c = ctx.channel
+            
+            if c.id not in bot.disabled_commands.keys():
+                d_cmds = bot.disabled_commands[c.id]
+                print(d_cmds)
+                if cmd_name in d_cmds:
+                    emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
+                else:
+                    d_cmds.remove(cmd_name)
+                    emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **enabled** in {c.mention} ."
+                    print(d_cmds)
+            else:
+                emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
+            
             await ctx.send(embed=emb)
 
 class Buttons(View):
