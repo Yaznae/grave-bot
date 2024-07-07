@@ -324,7 +324,7 @@ class ClearNamesConfirmation(View):
     async def first(self, intr: Interaction, button: Button):
         await intr.response.defer()
         MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("namehistory").find_one_and_delete({ "user_id": str(intr.user.id) })
-        emb.description = f"{intr.user.mention}: **cleared** your **name history** ."
+        self.emb.description = f"{intr.user.mention}: **cleared** your **name history** ."
         await self.message.edit(embed=self.emb, view=None)
 
     @button(emoji='<:cancel:1256397856995283035>', style=ButtonStyle.red)
