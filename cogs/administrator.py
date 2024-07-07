@@ -1167,6 +1167,7 @@ class Administrator(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
         perms = dict(iter(Permissions.elevated()))
+        print(perms)
         perm_check = [key for key, val in perms if val == True]
 
         if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role and ctx.author is not ctx.guild.owner:
@@ -1180,8 +1181,8 @@ class Administrator(Cog):
             async with ctx.channel.typing():
                 for r in m.roles:
                     if r.name == "@everyone": continue
-                    r_perms = dict(iter(r.permissions))
-                    print(r_perms)
+                    print(dict(iter(r.permissions)))
+                    r_perms = [key for key, val in dict(iter(r.permissions)) if val == True]
                     if any(x in perm_check for x in r_perms):
                         await m.remove_roles(r)
                         roles_removed.append(r.mention)
