@@ -1026,7 +1026,7 @@ class Moderation(Cog):
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
             await ctx.send(embed=emb)
             return
-        elif m.top_role > ctx.guild.me.top_role:
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
             await ctx.send(embed=emb)
             return
@@ -1048,7 +1048,7 @@ class Moderation(Cog):
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
             await ctx.send(embed=emb)
             return
-        elif m.top_role > ctx.guild.me.top_role:
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
             await ctx.send(embed=emb)
             return
@@ -1076,7 +1076,7 @@ class Moderation(Cog):
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
             await ctx.send(embed=emb)
             return
-        elif m.top_role > ctx.guild.me.top_role:
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
             await ctx.send(embed=emb)
             return
