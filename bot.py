@@ -124,6 +124,11 @@ async def on_command_error(ctx, err):
         return
     elif str(ctx.author.id) in bot.blacklisted_users:
         return
+    elif ctx.channel.id in bot.disabled_commands.keys() and cmd_name in bot.disabled_commands[ctx.channel.id]:
+        emb = Embed(color=0x2b2d31)
+        cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.name
+        emb.description = f"{ctx.author.mention}: `{cmd_name}` is **disabled** in {ctx.channel.mention} ."
+        await ctx.send(embed=emb)
     elif isinstance(err, CheckFailure):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: you lack the **permissions** to use this command:\n`server_owner`"
@@ -143,6 +148,14 @@ def bot_owner():
         owners = [931514266815725599, 1191209067335651431, 1084794150320357408]
         return ctx.author.id in owners
     return check(predicate)
+
+@bot.check
+async def check_disabled(ctx):
+    cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.name
+    if ctx.channel.id in bot.disabled_commands.keys() and cmd_name in bot.disabled_commands[ctx.channel.id]:
+        return False
+    else:
+        return True
 
 @bot.check
 async def check_allowed(ctx):
