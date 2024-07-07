@@ -483,6 +483,15 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         r = await r_conv.convert(ctx, role)
 
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
+            await ctx.send(embed=emb)
+            return
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb = Embed(color=0x2b2d31, description=f"{ctx.author.mention}: that user is **higher** than you .")
+            await ctx.send(embed=emb)
+            return
+
         if r > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that role is higher than you ."
             await ctx.send(embed=emb)
@@ -535,7 +544,7 @@ class Moderation(Cog):
         if m == ctx.guild.me:
             await ctx.send('tf i do')
             return
-        elif m == ctx.author or m == ctx.guild.owner:
+        elif m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
             await ctx.send(embed=emb)
             return
@@ -566,7 +575,7 @@ class Moderation(Cog):
         if u == self.bot.user:
             await ctx.send('tf i do')
             return
-        elif u == ctx.author or u == ctx.guild.owner:
+        elif u == ctx.author or u == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
             await ctx.send(embed=emb)
             return
@@ -587,7 +596,7 @@ class Moderation(Cog):
         if m == ctx.guild.me:
             await ctx.send('tf i do')
             return
-        elif m == ctx.author or m == ctx.guild.owner:
+        elif m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
             await ctx.send(embed=emb)
             return
@@ -671,7 +680,7 @@ class Moderation(Cog):
         else:
             d = None
 
-        if m == ctx.author or m == ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
@@ -698,7 +707,7 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        if m == ctx.author or m == ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
@@ -721,7 +730,7 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        if m == ctx.author or m == ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
@@ -753,7 +762,7 @@ class Moderation(Cog):
         emb = Embed(color=0x2b2d31)
         perms = ctx.channel.permissions_for(m)
 
-        if m == ctx.author or m == ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
@@ -777,7 +786,7 @@ class Moderation(Cog):
         emb = Embed(color=0x2b2d31)
         perms = ctx.channel.permissions_for(m)
 
-        if m == ctx.author or m == ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
@@ -1092,7 +1101,7 @@ class Moderation(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
 
-        if m == ctx.author or m == ctx.guild.owner:
+        if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
         elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
