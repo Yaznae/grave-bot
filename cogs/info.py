@@ -27,6 +27,18 @@ class Info(Cog):
                 name_collection.insert_one({ "user_id": str(after.id), "usernames": [after.name, before.name] })
 
     @Cog.listener()
+    async def on_member_update(self, before, after):
+        if before.nick != after.nick:
+            name_collection = self.mongo.get_collection('namehistory')
+            check = name_collection.find_one({ "user_id": str(after.id) })
+            if check:
+                curr_history = check["usernames"]
+                curr_history.insert(0, after.nick)
+                name_collection.find_one_and_update({ "user_id": str(after.id) }, { "$set": { "usernames": curr_history } })
+            else:
+                name_collection.insert_one({ "user_id": str(after.id), "usernames": [after.nick, before.nick] })
+
+    @Cog.listener()
     async def on_guild_join(self, guild):
         if not guild.system_channel:
             cs = await guild.fetch_channels()
