@@ -6,7 +6,7 @@ import random
 from typing import Optional
 from pymongo import MongoClient
 from discord import Embed, Button, ButtonStyle, Interaction, Color, Member
-from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, Command, check
+from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, Command, check, Permissions
 from discord.ext.commands import TextChannelConverter, ColourConverter, GuildChannelConverter, RoleConverter
 from discord.ui import View, button
 
@@ -1157,6 +1157,29 @@ class Administrator(Cog):
         except KeyError:
             pass
         emb.description = f"{ctx.author.mention}: enabled **all commands** in {c.mention} ."
+        await ctx.send(embed=emb)
+
+    @command(name="stripstaff", description="strips all staff roles from the mentioned user .")
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def strip_staff(self, ctx, member):
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        emb = Embed(color=0x2b2d31)
+        perm_check = Permissions.elevated()
+        if not m.roles:
+            emb.description = f"{ctx.author.mention}: {m.mention} has **no roles** ."
+        else:
+            roles_removed = []
+            with ctx.channel.typing():
+                for r in m.roles:
+                    if r.permissions <= perm_check:
+                        await m.remove_roles(r)
+                        roles_removed.append(r.mention)
+            try:
+                emb.description = f"{ctx.author.mention}: **stripped staff roles** from {m.mention}: {', '.join(roles_removed)}"
+            except:
+                emb.description = f"{ctx.author.mention}: {m.mention} has **no staff roles** ."
         await ctx.send(embed=emb)
 
 class Buttons(View):
