@@ -1134,6 +1134,22 @@ class Administrator(Cog):
             
             await ctx.send(embed=emb)
 
+    @ecmd_group.command(name="all", description="disabled all commands in a specific channel .")
+    @guild_only()
+    @has_guild_permissions(administrator=True)
+    async def ecmd_all(self, ctx, *, channel: Optional[str]):
+        c_conv = GuildChannelConverter()
+        emb = Embed(color=0x2b2d31)
+
+        if channel:
+            c = await c_conv.convert(ctx, channel)
+        else:
+            c = ctx.channel
+
+        self.bot.disabled_commands.pop(c.id)
+        emb.description = f"{ctx.author.mention}: enabled **all commands** in {c.mention} ."
+        await ctx.send(embed=emb)
+
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):
         self.index = 1
