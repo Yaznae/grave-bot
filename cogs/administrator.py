@@ -1180,7 +1180,7 @@ class Administrator(Cog):
             roles_removed = []
             async with ctx.channel.typing():
                 for r in m.roles:
-                    if r.permissions <= perm_check:
+                    if r.permissions >= perm_check:
                         await m.remove_roles(r)
                         roles_removed.append(r.mention)
             try:
