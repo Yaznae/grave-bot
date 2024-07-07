@@ -1166,7 +1166,7 @@ class Administrator(Cog):
         m_conv = MemberConverter()
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
-        perm_check = ['kick_members', 'ban_members', 'administrator', 'manage_channels', 'manage_guild', 'manage_messages', 'manage_roles', 'manage_webhooks', 'manage_expressions', 'manage_threads', 'moderate members']
+        perm_check = ['kick_members', 'ban_members', 'administrator', 'manage_channels', 'manage_guild', 'manage_messages', 'manage_roles', 'manage_webhooks', 'manage_expressions', 'manage_threads', 'moderate_members']
 
         if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
