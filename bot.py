@@ -50,6 +50,13 @@ async def on_ready():
     with open('./config.json', 'w') as f:
         json.dump(config, f)
 
+    c3 = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('disabled').find({})
+    for d in c3:
+        try:
+            bot.disabled_commands.update({ int(d["channel_id"]): d["commands"] })
+        except:
+            pass
+
     for cog in cogs:
         await bot.load_extension(f"cogs.{cog}")
 

@@ -1068,20 +1068,20 @@ class Administrator(Cog):
             
             if c.id in self.bot.disabled_commands.keys():
                 d_cmds = self.bot.disabled_commands[c.id]
-                print(d_cmds)
                 if cmd_name in d_cmds:
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **disabled** in {c.mention} ."
                 else:
                     d_cmds.append(cmd_name)
+                    self.mongo.get_collection("disabled").find_one_and_update({ "channel_id": str(c.id)}, { "$set": {  "commands": d_cmds } })
                     emb.description = f"{ctx.author.mention}: **disabled** `{cmd_name}` in {c.mention} ."
-                    print(d_cmds)
             else:
                 self.bot.disabled_commands.update({ c.id: [cmd_name] })
+                self.mongo.get_collection("disabled").insert_one({ "channel_id": str(c.id), "commands": [cmd_name] })
                 emb.description = f"{ctx.author.mention}: **disabled** `{cmd_name}` in {c.mention} ."
             
             await ctx.send(embed=emb)
 
-    @dcmd_group.command(name="all", description="disabled all commands in a specific channel .")
+    @dcmd_group.command(name="all", description="disables all commands in a specific channel .")
     @guild_only()
     @has_guild_permissions(administrator=True)
     async def dcmd_all(self, ctx, *, channel: Optional[str]):
@@ -1099,6 +1099,10 @@ class Administrator(Cog):
                 continue
             temp_list.append(cmd.name)
         self.bot.disabled_commands.update({ c.id: temp_list })
+        try:
+            self.mongo.get_collection("disabled").find_one_and_update({ "channel_id": str(c.id)}, { "$set": {  "commands": temp_list } })
+        except:
+            self.mongo.get_collection("disabled").insert_one({ "channel_id": str(c.id), "commands": temp_list })
         emb.description = f"{ctx.author.mention}: disabled **all commands** in {c.mention} ."
         await ctx.send(embed=emb)
 
@@ -1128,13 +1132,14 @@ class Administrator(Cog):
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
                 else:
                     d_cmds.remove(cmd_name)
+                    self.mongo.get_collection("disabled").find_one_and_update({ "channel_id": str(c.id)}, { "$set": {  "commands": d_cmds } })
                     emb.description = f"{ctx.author.mention}: **enabled** `{cmd_name}` in {c.mention} ."
             else:
                 emb.description = f"{ctx.author.mention}: `{cmd_name}` is already **enabled** in {c.mention} ."
             
             await ctx.send(embed=emb)
 
-    @ecmd_group.command(name="all", description="disabled all commands in a specific channel .")
+    @ecmd_group.command(name="all", description="enables all commands in a specific channel .")
     @guild_only()
     @has_guild_permissions(administrator=True)
     async def ecmd_all(self, ctx, *, channel: Optional[str]):
@@ -1148,6 +1153,7 @@ class Administrator(Cog):
 
         try:
             self.bot.disabled_commands.pop(c.id)
+            self.mongo.get_collection("disabled").find_one_and_delete({ "channel_id": str(c.id) })
         except KeyError:
             pass
         emb.description = f"{ctx.author.mention}: enabled **all commands** in {c.mention} ."
