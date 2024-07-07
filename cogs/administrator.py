@@ -1182,7 +1182,7 @@ class Administrator(Cog):
                     r_perms = dict(iter(r.permissions))
                     for p in perm_check:
                         if r_perms[p] is True:
-                            await m.remove_roles[r]
+                            await m.remove_roles(r)
                             roles_removed.append(r.mention)
             if roles_removed:
                 emb.description = f"{ctx.author.mention}: **stripped staff roles** from {m.mention}: {', '.join(roles_removed)}"
