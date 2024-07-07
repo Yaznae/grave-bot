@@ -7,7 +7,7 @@ from typing import Optional
 from pymongo import MongoClient
 from discord import Embed, Button, ButtonStyle, Interaction, Color, Member, Permissions
 from discord.ext.commands import group, command, Cog, guild_only, has_guild_permissions, cooldown, BucketType, Command, check
-from discord.ext.commands import TextChannelConverter, ColourConverter, GuildChannelConverter, RoleConverter
+from discord.ext.commands import TextChannelConverter, ColourConverter, GuildChannelConverter, RoleConverter, MemberConverter
 from discord.ui import View, button
 
 class Administrator(Cog):
