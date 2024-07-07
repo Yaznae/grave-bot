@@ -1089,7 +1089,8 @@ class Administrator(Cog):
         emb = Embed(color=0x2b2d31)
         temp_list = []
         for cmd in self.bot.commands:
-            print(cmd.name)
+            temp_list.append(cmd.name)
+        print(temp_list)
 
     @group(name="enablecommand", aliases=["ecmd"], description=f"enables a command for a specific channel .", invoke_without_command=True)
     @guild_only()
