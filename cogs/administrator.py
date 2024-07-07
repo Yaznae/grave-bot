@@ -1166,9 +1166,7 @@ class Administrator(Cog):
         m_conv = MemberConverter()
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
-        perms = dict(iter(Permissions.elevated()))
-        perm_check = [key for key, val in perms if val == True]
-        print(perm_check)
+        perm_check = ['kick_members', 'ban_members', 'administrator', 'manage_channels', 'manage_guild', 'manage_messages', 'manage_roles', 'manage_webhooks', 'manage_expressions', 'manage_threads', 'moderate members']
 
         if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
@@ -1181,11 +1179,11 @@ class Administrator(Cog):
             async with ctx.channel.typing():
                 for r in m.roles:
                     if r.name == "@everyone": continue
-                    print(dict(iter(r.permissions)))
-                    r_perms = [key for key, val in dict(iter(r.permissions)) if val == True]
-                    if any(x in perm_check for x in r_perms):
-                        await m.remove_roles(r)
-                        roles_removed.append(r.mention)
+                    r_perms = dict(iter(r.permissions))
+                    for p in perm_check:
+                        if r_perms[p] is True:
+                            await m.remove_roles[r]
+                            roles_removed.append(r.mention)
             if roles_removed:
                 emb.description = f"{ctx.author.mention}: **stripped staff roles** from {m.mention}: {', '.join(roles_removed)}"
             else:
