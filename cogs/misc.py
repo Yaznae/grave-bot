@@ -22,7 +22,7 @@ class Miscellaneous(Cog):
         c = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('afk').find({})
         for d in c:
             try:
-                self.afk.update({ d["username"]: { "reason": d["reason"], "timestamp": d["timestamp"] } })
+                self.afk.update({ int(d["user_id"]): { "reason": d["reason"], "timestamp": d["timestamp"] } })
             except:
                 pass
 
@@ -30,29 +30,29 @@ class Miscellaneous(Cog):
     async def set_afk(self, message, reason):
         afk = MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("afk")
 
-        if message.author.name in self.afk.keys():
-            time = datetime.now().timestamp() - self.afk[message.author.name]["timestamp"]
+        if message.author.id in self.afk.keys():
+            time = datetime.now().timestamp() - self.afk[message.author.id]["timestamp"]
             readable = hr.Time(str(math.ceil(time)),default_unit=hr.Time.Unit.SECOND).to_humanreadable()
-            self.afk.pop(message.author.name)
-            afk.find_one_and_delete({ "username": message.author.name })
+            self.afk.pop(message.author.id)
+            afk.find_one_and_delete({ "user_id": str(message.author.id) })
             emb = Embed(color=0x2b2d31, description=f"welcome back. you were **afk** for `{readable}` .")
             await message.reply(embed=emb)
         else:
-            afk.insert_one({ "username": message.author.name, "reason": reason, "timestamp": datetime.now().timestamp() })
-            self.afk.update({ message.author.name: { "reason": reason, "timestamp": datetime.now().timestamp() } })
+            afk.insert_one({ "user_id": str(message.author.id), "reason": reason, "timestamp": datetime.now().timestamp() })
+            self.afk.update({ message.author.id: { "reason": reason, "timestamp": datetime.now().timestamp() } })
             emb = Embed(color=0x2b2d31, description=f"{message.author.mention}: set **afk**: `{reason}`")
             await message.channel.send(embed=emb)
 
     @tasks.loop(count=1)
     async def check_afk(self, message):
         ctx = await self.bot.get_context(message)
-        if ctx.valid and ctx.command.name == "afk" and message.author.name in self.afk.keys():
+        if ctx.valid and ctx.command.name == "afk" and message.author.id in self.afk.keys():
             return
         try:
-            time = datetime.now().timestamp() - self.afk[message.author.name]["timestamp"]
+            time = datetime.now().timestamp() - self.afk[message.author.id]["timestamp"]
             readable = hr.Time(str(math.ceil(time)),default_unit=hr.Time.Unit.SECOND).to_humanreadable()
-            self.afk.pop(message.author.name)
-            MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('afk').find_one_and_delete({ "username": message.author.name })
+            self.afk.pop(message.author.id)
+            MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('afk').find_one_and_delete({ "user_id": str(message.author.id) })
             emb = Embed(color=0x2b2d31, description=f"welcome back. you were **afk** for `{readable}` .")
             await message.reply(embed=emb)
         except:
@@ -61,18 +61,22 @@ class Miscellaneous(Cog):
     @Cog.listener()
     async def on_message(self, msg):
         if msg.author.bot: return
-        if msg.author.name in self.afk.keys():
+        if msg.author.id in self.afk.keys():
             self.check_afk.start(msg)
         elif msg.reference:
             replied = await self.bot.get_channel(msg.reference.channel_id).fetch_message(msg.reference.message_id)
-            if replied.author.name in self.afk.keys():
-                emb = Embed(color=0x2b2d31, description=f"{replied.author.mention} is **afk**: `{self.afk[replied.author.name]['reason']}`")
+            if replied.author.id in self.afk.keys():
+                time = datetime.now().timestamp() - self.afk[replied.author.id]["timestamp"]
+                readable = hr.Time(str(math.ceil(time)),default_unit=hr.Time.Unit.SECOND).to_humanreadable()
+                emb = Embed(color=0x2b2d31, description=f"{replied.author.mention} has been **afk** for **{readable}**: `{self.afk[replied.author.id]['reason']}`")
                 await msg.reply(embed=emb)
         elif msg.mentions:
             mentions = list(set(msg.mentions))
             for m in mentions:
-                if m.name in self.afk.keys():
-                    emb = Embed(color=0x2b2d31, description=f"{m.mention} is **afk**: `{self.afk[m.name]['reason']}`")
+                if m.id in self.afk.keys():
+                    time = datetime.now().timestamp() - self.afk[replied.author.id]["timestamp"]
+                    readable = hr.Time(str(math.ceil(time)),default_unit=hr.Time.Unit.SECOND).to_humanreadable()
+                    emb = Embed(color=0x2b2d31, description=f"{m.mention} has been **afk** for **{readable}**: `{self.afk[m.id]['reason']}`")
                     await msg.reply(embed=emb)
 
     @Cog.listener()
