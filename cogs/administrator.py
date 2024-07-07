@@ -1174,8 +1174,6 @@ class Administrator(Cog):
             emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
         elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
-        elif not m.roles:
-            emb.description = f"{ctx.author.mention}: {m.mention} has **no roles** ."
         else:
             roles_removed = []
             async with ctx.channel.typing():
