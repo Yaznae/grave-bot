@@ -69,6 +69,7 @@ async def on_command_error(ctx, err):
         prefix = config['custom_prefix'][str(ctx.guild.id)]
     except Exception as e:
         prefix = config['prefix']
+    cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
 
     if isinstance(err, MissingPermissions):
         emb = Embed(color=0x2b2d31)
@@ -126,7 +127,6 @@ async def on_command_error(ctx, err):
         return
     elif ctx.channel.id in bot.disabled_commands.keys() and cmd_name in bot.disabled_commands[ctx.channel.id]:
         emb = Embed(color=0x2b2d31)
-        cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
         emb.description = f"{ctx.author.mention}: `{cmd_name}` is **disabled** in {ctx.channel.mention} ."
         await ctx.send(embed=emb)
     elif isinstance(err, CheckFailure):
