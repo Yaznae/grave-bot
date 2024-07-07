@@ -1167,7 +1167,14 @@ class Administrator(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
         perm_check = Permissions.elevated()
-        if not m.roles:
+
+        if m == ctx.author:
+            emb.description = f"{ctx.author.mention}: you **cannot** use this command on yourself ."
+        elif m.top_role > ctx.author.top_role and ctx.author is not ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than you ."
+        elif m.top_role > ctx.guild.me.top_role or m is ctx.guild.owner:
+            emb.description = f"{ctx.author.mention}: that user is **higher** than me ."
+        elif not m.roles:
             emb.description = f"{ctx.author.mention}: {m.mention} has **no roles** ."
         else:
             roles_removed = []
