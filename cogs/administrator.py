@@ -1167,8 +1167,8 @@ class Administrator(Cog):
         m = await m_conv.convert(ctx, member)
         emb = Embed(color=0x2b2d31)
         perms = dict(iter(Permissions.elevated()))
-        print(perms)
         perm_check = [key for key, val in perms if val == True]
+        print(perm_check)
 
         if m == ctx.author or m == ctx.guild.owner or m.top_role == ctx.author.top_role and ctx.author is not ctx.guild.owner:
             emb.description = f"{ctx.author.mention}: you **cannot** use this command on this person ."
