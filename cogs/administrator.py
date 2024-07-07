@@ -1076,7 +1076,7 @@ class Administrator(Cog):
                     emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **disabled** in {c.mention} ."
                     print(d_cmds)
             else:
-                bot.disabled_commands.update({ c.id: [cmd_name] })
+                self.bot.disabled_commands.update({ c.id: [cmd_name] })
                 emb.description = f"{ctx.author.mention}: `{cmd_name}` has been **disabled** in {c.mention} ."
             
             await ctx.send(embed=emb)
