@@ -262,81 +262,6 @@ class Administrator(Cog):
             emb.add_field(name='available commands:', value=commands_list)
             emb.description = f"*{ctx.command.description}*"
             await ctx.send(embed=emb)
-
-    @embed_group.command(name="send", description="sends an embed in the channel .")
-    @guild_only()
-    @has_guild_permissions(administrator=True)
-    async def embed_send(self, ctx, embed, *, channel: Optional[str]):
-        c_conv = GuildChannelConverter()
-        emb = Embed(color=0x2b2d31)
-        check = self.mongo.get_collection('servers').find_one({ "guild_id": f"{ctx.guild.id}" })
-        check2 = self.mongo.get_collection('embeds').find_one({ "guild_id": f"{ctx.guild.id}" })
-
-        if not check or not check2 or embed not in check2.keys():
-            emb.description = f"{ctx.author.mention}: that embed does not exist ."
-            await ctx.send(embed=emb)
-            return
-        else:
-            chosen_embed = check2[embed]
-            try:
-                msg = chosen_embed["message"].replace("{{user_mention}}".format(), ctx.author.mention).replace("{{user_name}}".format(), ctx.author.name).replace("{{user_nick}}".format(), ctx.author.global_name).replace("{{server_name}}".format(), ctx.guild.name).replace("{{member_count}}".format(), f"{ctx.guild.member_count}")
-            except:
-                pass
-            em = chosen_embed["embed"]
-            for k in em.keys():
-                v = em[k]
-                if k == "author":
-                    try:
-                        if v["icon_url"] == "user_icon":
-                            v.update({ "icon_url": v["icon_url"].replace("user_icon", f'{ctx.author.display_avatar.url}') })
-                        elif v["icon_url"] == "server_icon":
-                            if ctx.guild.icon:
-                                v.update({ "icon_url": v["icon_url"].replace("server_icon", f'{ctx.guild.icon.url}') })
-                            else:
-                                v.pop("icon_url")
-                    except:
-                        pass
-                    v["name"] = v["name"].replace("{{user_mention}}".format(), ctx.author.mention).replace("{{user_name}}".format(), ctx.author.name).replace("{{user_nick}}".format(), ctx.author.global_name).replace("{{server_name}}".format(), ctx.guild.name).replace("{{member_count}}".format(), f"{ctx.guild.member_count}")
-                    em.update({ "author": v })
-                elif k == "footer":
-                    v2 = em[k]["text"].replace("{{user_mention}}".format(), ctx.author.mention).replace("{{user_name}}".format(), ctx.author.name).replace("{{user_nick}}".format(), ctx.author.global_name).replace("{{server_name}}".format(), ctx.guild.name).replace("{{member_count}}".format(), f"{ctx.guild.member_count}")
-                    em.update({ "footer": { "text": v2 } })
-                elif k == "image":
-                    em.update({ k: { "url": v } })
-                elif k == "thumbnail":
-                    v = v.replace("user_icon", ctx.author.display_avatar.url)
-                    if member.guild.icon:
-                        v.replace("server_icon", ctx.guild.icon.url)
-                    em.update({ k: { "url": v } })
-                elif k == "color":
-                    pass
-                else:
-                    v = v.replace("{{user_mention}}".format(), ctx.author.mention).replace("{{user_name}}".format(), ctx.author.name).replace("{{user_nick}}".format(), ctx.author.global_name).replace("{{server_name}}".format(), ctx.guild.name).replace("{{member_count}}".format(), f"{ctx.guild.member_count}")
-                    em.update({ k: v })
-
-            if channel:
-                c = await c_conv.convert(ctx, channel)
-                try:
-                    send_embed = Embed.from_dict(em) or None
-                    await c.send(msg, embed=send_embed)
-                except:
-                    send_embed = Embed.from_dict(em)
-                    try:
-                        await c.send(embed=send_embed)
-                    except:
-                        emb.description = f"{ctx.author.mention}: this embed is not yet setup ."
-                        await ctx.send(embed=emb)
-            else:
-                try:
-                    send_embed = Embed.from_dict(em) or None
-                    await ctx.send(msg, embed=send_embed)
-                except:
-                    send_embed = Embed.from_dict(em)
-                    try:
-                        await ctx.send(embed=send_embed)
-                    except:
-                        emb.description = f"{ctx.author.mention}: this embed is not yet setup ."
-                        await ctx.send(embed=emb)
         
 
     @embed_group.command(name="create", description="creates **embeds** for server uses .")
@@ -651,10 +576,10 @@ class Administrator(Cog):
         emb.description = f"{ctx.author.mention}: set `{embed}` as **booster** embed ."
         await ctx.send(embed=emb)
 
-    @embed_group.command(name="test", description="tests embeds .")
+    @embed_group.command(name="send", description="sends embeds .")
     @guild_only()
     @has_guild_permissions(administrator=True)
-    async def test_embed(self, ctx, embed):
+    async def send_embed(self, ctx, embed):
         emb = Embed(color=0x2b2d31)
         check = self.mongo.get_collection("embeds").find_one({ "guild_id": f"{ctx.guild.id}" })
         if not check:
