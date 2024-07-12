@@ -313,15 +313,30 @@ class Administrator(Cog):
                 else:
                     v = v.replace("{{user_mention}}".format(), ctx.author.mention).replace("{{user_name}}".format(), ctx.author.name).replace("{{user_nick}}".format(), ctx.author.global_name).replace("{{server_name}}".format(), ctx.guild.name).replace("{{member_count}}".format(), f"{ctx.guild.member_count}")
                     em.update({ k: v })
-            try:
-                welcome_embed = Embed.from_dict(embed["embed"]) or None
-                await c.send(msg, embed=welcome_embed)
-            except:
-                welcome_embed = Embed.from_dict(embed["embed"])
+
+            if channel:
+                c = await c_conv.convert(ctx, channel)
                 try:
-                    await c.send(embed=welcome_embed)
+                    send_embed = Embed.from_dict(em) or None
+                    await c.send(msg, embed=send_embed)
                 except:
-                    return
+                    send_embed = Embed.from_dict(em)
+                    try:
+                        await c.send(embed=send_embed)
+                    except:
+                        emb.description = f"{ctx.author.mention}: this embed is not yet setup ."
+                        await ctx.send(embed=emb)
+            else:
+                try:
+                    send_embed = Embed.from_dict(em) or None
+                    await ctx.send(msg, embed=send_embed)
+                except:
+                    send_embed = Embed.from_dict(em)
+                    try:
+                        await ctx.send(embed=send_embed)
+                    except:
+                        emb.description = f"{ctx.author.mention}: this embed is not yet setup ."
+                        await ctx.send(embed=emb)
         
 
     @embed_group.command(name="create", description="creates **embeds** for server uses .")
