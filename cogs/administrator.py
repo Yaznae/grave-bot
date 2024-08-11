@@ -1220,6 +1220,11 @@ class Administrator(Cog):
         emb = Embed(color=0x2b2d31)
         m_conv = MemberConverter()
         m = await m_conv.convert(ctx, member)
+
+        if m == ctx.author:
+            emb.description = f"{ctx.author.mention}: you cannot **remove** yourself from the whitelist ."
+            await ctx.send(embed=emb)
+            return
         
         if ctx.guild.id in self.bot.whitelist.keys():
             wl_usrs = self.bot.whitelist[ctx.guild.id]["users"]
