@@ -922,14 +922,14 @@ class Administrator(Cog):
 
     @group(name="autorole", description="manage autoroling new members .", invoke_without_command=True)
     @guild_only()
-    @guild_owner_only()
+    @has_guild_permissions(administrator=True)
     async def autorole_group(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.bot.get_command('help'), command="autorole")
 
     @autorole_group.command(name="addrole", aliases=["add"], description="add role to autorole list .")
     @guild_only()
-    @guild_owner_only()
+    @has_guild_permissions(administrator=True)
     async def autorole_addrole(self, ctx, role):
         r_conv = RoleConverter()
         r = await r_conv.convert(ctx, role)
@@ -956,7 +956,7 @@ class Administrator(Cog):
 
     @autorole_group.command(name="removerole", aliases=["remove"], description="remove role from autorole list .")
     @guild_only()
-    @guild_owner_only()
+    @has_guild_permissions(administrator=True)
     async def remove_role(self, ctx, role):
         r_conv = RoleConverter()
         r = await r_conv.convert(ctx, role)
@@ -981,7 +981,7 @@ class Administrator(Cog):
 
     @autorole_group.command(name="removeall", description="remove all roles from autorole list .")
     @guild_only()
-    @guild_owner_only()
+    @has_guild_permissions(administrator=True)
     async def removeall_roles(self, ctx):
         emb = Embed(color=0x2b2d31)
 
@@ -999,7 +999,7 @@ class Administrator(Cog):
 
     @autorole_group.command(name="listroles", aliases=["list"], description="list all autoroles for this server .")
     @guild_only()
-    @guild_owner_only()
+    @has_guild_permissions(administrator=True)
     async def list_roles(self, ctx):
         emb = Embed(color=0x2b2d31)
 
