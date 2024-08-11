@@ -1260,6 +1260,7 @@ class Administrator(Cog):
                 emb.add_field(name="commands", value=f"`{' `⋅ `'.join(cmds)}`", inline=True)
             if usrs:
                 emb.add_field(name="members", value=f"<@{'> ⋅ <@'.join(usrs)}>", inline=True)
+            emb.set_footer(text=f"{len(cmds)} commands ⋅ {len(usrs)} members")
         await ctx.send(embed=emb)
 
 class Buttons(View):
