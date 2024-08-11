@@ -150,7 +150,7 @@ async def on_command_error(ctx, err):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: `{cmd_name}` is **disabled** in {ctx.channel.mention} ."
         await ctx.send(embed=emb)
-    elif ctx.guild.id in bot.whitelist.keys() and cmd_name in bot.whitelist[ctx.guild.id]["commands"] and str(ctx.author.id) not in bot.whitelist[ctx.guild.id]["users"]:
+    elif ctx.guild.id in bot.whitelist.keys() and str(cmd_name) in bot.whitelist[ctx.guild.id]["commands"] and str(ctx.author.id) not in bot.whitelist[ctx.guild.id]["users"]:
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: you are not **whitelisted** to use this command ."
         await ctx.send(embed=emb)
@@ -185,7 +185,8 @@ async def check_disabled(ctx):
 @bot.check
 async def check_whitelist(ctx):
     cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
-    if ctx.guild.id in bot.whitelist.keys() and cmd_name in bot.whitelist[ctx.guild.id]["commands"]:
+    if ctx.guild.id in bot.whitelist.keys() and str(cmd_name) in bot.whitelist[ctx.guild.id]["commands"]:
+        print('hell yea')
         if str(ctx.author.id) in bot.whitelist[ctx.guild.id]["users"]:
             return True
         else:
