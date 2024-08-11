@@ -1171,6 +1171,97 @@ class Administrator(Cog):
                 emb.description = f"{ctx.author.mention}: {m.mention} has **no staff roles** ."
         await ctx.send(embed=emb)
 
+    @group(name="whitelist", description="specifies commands to be used by certain people .", invoke_without_command=True)
+    @guild_only()
+    @guild_owner_only()
+    async def whitelist_group(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.bot.get_command('help'), command="whitelist")
+
+    @whitelist_group.command("command", aliases=["cmd"], description="adds a command to the whitelist .")
+    @guild_only()
+    @guild_owner_only()
+    async def whitelist_cmd(self, ctx, command):
+        emb = Embed(color=0x2b2d31)
+        try:
+            cmd = self.bot.get_command(command)
+            cmd_name = cmd.root_parent if cmd.root_parent else cmd.name
+        except:
+            emb.description = f"{ctx.author.mention}: that **command** does not exist ."
+            await ctx.send(embed=emb)
+            return
+        
+        if ctx.guild.id in self.bot.whitelist.keys():
+            wl_cmds = self.bot.whitelist[ctx.guild.id]["commands"]
+            if cmd_name not in wl_cmds:
+                wl_cmds.append(cmd_name)
+                self.bot.whitelist[ctx.guild.id]["commands"] = wl_cmds
+                self.mongo.get_collection("whitelist").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "commands": wl_cmds } })
+                emb.description = f"{ctx.author.mention}: **prevented** `{cmd_name}` from being used by **un-whitelisted** members ."
+            else:
+                wl_cmds.remove(cmd_name)
+                self.bot.whitelist[ctx.guild.id]["commands"] = wl_cmds
+                self.mongo.get_collection("whitelist").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": {  "commands": wl_cmds } })
+                emb.description = f"{ctx.author.mention}: **allowed** `{cmd_name}` to be used by **un-whitelisted** members ."
+        else:
+            self.bot.whitelist.update({ ctx.guild.id: {
+                "commands": [cmd_name],
+                "users": [str(ctx.author.id)]
+            } })
+            self.mongo.get_collection("whitelist").insert_one({ "guild_id": str(ctx.guild.id), "commands": [cmd_name], "users": [str(ctx.author.id)] })
+            emb.description = f"{ctx.author.mention}: **prevented** `{cmd_name}` from being used by **un-whitelisted** members ."
+        
+        await ctx.send(embed=emb)
+
+    @whitelist_group.command("member", aliases=["user"], description="adds a member to the whitelist .")
+    @guild_only()
+    @guild_owner_only()
+    async def whitelist_user(self, ctx, *, member):
+        emb = Embed(color=0x2b2d31)
+        m_conv = MemberConverter()
+        m = await m_conv.convert(ctx, member)
+        
+        if ctx.guild.id in self.bot.whitelist.keys():
+            wl_usrs = self.bot.whitelist[ctx.guild.id]["users"]
+            if str(m.id) not in wl_usrs:
+                wl_usrs.append(str(m.id))
+                self.bot.whitelist[ctx.guild.id]["users"] = wl_usrs
+                self.mongo.get_collection("whitelist").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": { "users": wl_usrs } })
+                emb.description = f"{ctx.author.mention}: **added** {m.mention} to the **whitelisted** members ."
+            else:
+                wl_usrs.remove(str(m.id))
+                self.bot.whitelist[ctx.guild.id]["users"] = wl_usrs
+                self.mongo.get_collection("whitelist").find_one_and_update({ "guild_id": str(ctx.guild.id) }, { "$set": {  "users": wl_usrs } })
+                emb.description = f"{ctx.author.mention}: **removed** {m.mention} from the **whitelisted** members ."
+        else:
+            self.bot.whitelist.update({ ctx.guild.id: {
+                "commands": [],
+                "users": [str(m.id), str(ctx.author.id)]
+            } })
+            self.mongo.get_collection("whitelist").insert_one({ "guild_id": str(ctx.guild.id), "commands": [], "users": [str(m.id), str(ctx.author.id)] })
+            emb.description = f"{ctx.author.mention}: **added** {m.mention} to the **whitelisted** members ."
+        
+        await ctx.send(embed=emb)
+
+    @whitelist_group.command(name="list", description="lists whitelisted members and commands .")
+    @guild_only()
+    @guild_owner_only()
+    async def whitelist_list(self, ctx):
+        emb = Embed(color=0x2b2d31)
+        if ctx.guild.id not in self.bot.whitelist.keys():
+            emb.description = f"{ctx.author.mention}: there is **nothing whitelisted** yet ."
+        elif not self.bot.whitelist[ctx.guild.id]["commands"] and not self.bot.whitelist[ctx.guild.id]["users"]:
+            emb.description = f"{ctx.author.mention}: there is **nothing whitelisted** yet ."
+        else:
+            cmds = self.bot.whitelist[ctx.guild.id]["commands"]
+            usrs = self.bot.whitelist[ctx.guild.id]["users"]
+            emb.set_author(name=f"whitelist for {ctx.guild.name} :")
+            if cmds:
+                emb.add_field(name="commands", value=f"`{' `⋅ `'.join(cmds)}`", inline=True)
+            if usrs:
+                emb.add_field(name="members", value=f"<@{'> ⋅ <@'.join(usrs)}>", inline=True)
+        await ctx.send(embed=emb)
+
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):
         self.index = 1

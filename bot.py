@@ -30,6 +30,7 @@ cogs = [cog[:-3] for cog in os.listdir('cogs') if cog.endswith('.py')]
 bot = Bot(command_prefix=get_prefix, intents=intents, help_command=None)
 bot.blacklisted_users = []
 bot.disabled_commands = {}
+bot.whitelist = {}
 
 @bot.event
 async def on_ready():
@@ -55,6 +56,16 @@ async def on_ready():
     for d in c3:
         try:
             bot.disabled_commands.update({ int(d["channel_id"]): d["commands"] })
+        except:
+            pass
+    
+    c4 = MongoClient(os.environ["MONGO_URI"]).get_database('info').get_collection('whitelist').find({})
+    for d in c4:
+        try:
+            bot.whitelist.update({ int(d["guild_id"]): {
+                "commands": d["commands"],
+                "users": d["users"]
+            } })
         except:
             pass
 
@@ -139,6 +150,10 @@ async def on_command_error(ctx, err):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: `{cmd_name}` is **disabled** in {ctx.channel.mention} ."
         await ctx.send(embed=emb)
+    elif ctx.guild.id in bot.whitelist.keys() and cmd_name in bot.whitelist[ctx.guild.id]["commands"] and str(ctx.author.id) not in bot.whitelist[ctx.guild.id]["users"]:
+        emb = Embed(color=0x2b2d31)
+        emb.description = f"{ctx.author.mention}: you are not **whitelisted** to use this command ."
+        await ctx.send(embed=emb)
     elif isinstance(err, CheckFailure):
         emb = Embed(color=0x2b2d31)
         emb.description = f"{ctx.author.mention}: you lack the **permissions** to use this command:\n`server_owner`"
@@ -164,6 +179,17 @@ async def check_disabled(ctx):
     cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
     if ctx.channel.id in bot.disabled_commands.keys() and cmd_name in bot.disabled_commands[ctx.channel.id]:
         return False
+    else:
+        return True
+
+@bot.check
+async def check_whitelist(ctx):
+    cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
+    if ctx.guild.id in bot.whitelist.keys() and cmd_name in bot.whitelist[ctx.guild.id]["commands"]:
+        if str(ctx.author.id) in bot.whitelist[ctx.guild.id]["users"]:
+            return True
+        else:
+            return False
     else:
         return True
 
@@ -337,5 +363,4 @@ class ClearNamesConfirmation(View):
         self.emb.description = f"{self.ctx.author.mention}: cancelled **name history clearing** ."
         await self.message.edit(embed=self.emb, view=None)
 
-keep_alive()
 bot.run(os.environ['TOKEN'])
