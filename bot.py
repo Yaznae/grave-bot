@@ -363,4 +363,5 @@ class ClearNamesConfirmation(View):
         self.emb.description = f"{self.ctx.author.mention}: cancelled **name history clearing** ."
         await self.message.edit(embed=self.emb, view=None)
 
+keep_alive()
 bot.run(os.environ['TOKEN'])
