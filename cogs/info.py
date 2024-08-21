@@ -5,8 +5,10 @@ from typing import Optional
 from discord.ui import View, button
 from discord.utils import get
 from pymongo import MongoClient
+from imgurpython import ImgurClient
 import random
 import os
+import time
 import requests
 
 class Info(Cog):
@@ -25,6 +27,25 @@ class Info(Cog):
                 name_collection.find_one_and_update({ "user_id": str(after.id) }, { "$set": { "usernames": curr_history } })
             else:
                 name_collection.insert_one({ "user_id": str(after.id), "usernames": [after.name, before.name] })
+
+        if before.display_avatar.key != after.display_avatar.key:
+            av_history_db = self.mongo.get_collection("avatarhistory")
+            user_avh = av_history_db.find_one({ "user_id": str(after.id) })
+            imgur_client = ImgurClient(os.environ["IMGUR_ID"], os.environ["IMGUR_SECRET"])
+
+            config = {
+                'name': f"{new.display_avatar.key}",
+                'title': f"{new.display_avatar.key}",
+                'description': "grave bot : avatar history"
+            }
+
+            res = imgur_client.upload_from_url(after.display_avatar.url,config=config)
+            if user_avh:
+                avh_array = check['avatar_history']
+                avh_array.insert(0, f"{res['link']}#{int(time.time())}")
+                av_history_db.find_one_and_update({ "user_id": user_id }, { '$set': { "avatar_history": arr } })
+            else:
+                av_history_db.insert_one({ "user_id": str(after.id), "avatar_history": [f"{res['link']}#{int(time.time())}"] })
 
     @Cog.listener()
     async def on_member_update(self, before, after):
@@ -287,6 +308,26 @@ class Info(Cog):
             names = check["usernames"]
             emb.set_author(name=f"{u.name}'s username history :", icon_url=u.display_avatar.url)
             await NameHistory(ctx, emb, names).start()
+
+    @command(name="avatars", aliases=["avatarhistory", "avh"], description="shows a history of avatars .")
+    @cooldown(1, 5, BucketType.user)
+    async def avatarhistory(self, ctx, user: Optional[str]):
+        emb = Embed(color=0x2b2d31)
+
+        if user:
+            u_conv = UserConverter()
+            u = await u_conv.convert(ctx, user)
+        else:
+            u = ctx.author
+
+        check = self.mongo.get_collection("avatarhistory").find_one({ "user_id": str(u.id) })
+
+        if user_avh:
+            emb.set_author(name=f"{u.name}'s avatar history :")
+            await AvatarHistory(ctx, emb, user_avh["avatar_history"]).start()
+        else:
+            emb.description = f"{u.mention} does not have any **name history** ."
+            await ctx.send(embed=emb)
         
 class Buttons(View):
     def __init__(self, ctx, embed, iterable, whatever):
@@ -412,6 +453,80 @@ class NameHistory(View):
             count += 1
         self.embed.description = d
         self.embed.set_footer(text=f"page 1/{self.total_pages} ({len(self.iterable)} indexes)")
+
+        if self.total_pages == 1:
+            self.reply = await self.ctx.send(embed=self.embed)
+        else:
+            self.reply = await self.ctx.send(embed=self.embed, view=self)
+
+    @button(emoji='<:skipleft:1256399619361869864>', style=ButtonStyle.gray)
+    async def first(self, intr: Interaction, button: Button):
+        self.index = 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:left:1256399617436946442>', style=ButtonStyle.gray)
+    async def left(self, intr: Interaction, button: Button):
+        self.index -= 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:right:1256399615692111982>', style=ButtonStyle.gray)
+    async def right(self, intr: Interaction, button: Button):
+        self.index += 1
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    @button(emoji='<:skipright:1256399621673193634>', style=ButtonStyle.gray)
+    async def last(self, intr: Interaction, button: Button):
+        self.index = self.total_pages
+        await intr.response.defer()
+        await self.edit_page(self.reply)
+
+    async def on_timeout(self):
+        await self.reply.edit(view=None)
+
+class AvatarHistory(View):
+    def __init__(self, ctx, embed, changes):
+        self.index = 1
+        self.ctx = ctx
+        self.embed = embed
+        self.changes = changes
+        self.total_pages = len(changes)
+        super().__init__(timeout=120)
+
+    async def interaction_check(self, intr: Interaction) -> bool:
+        if intr.user == self.ctx.author:
+            return True
+        else:
+            emb = Embed(color=0x2b2d31, description=f"{intr.user.mention}: you are not the **author** of this command .")
+            await intr.response.send_message(embed=emb, ephemeral=True)
+            return False
+
+    async def edit_page(self, reply):
+        images = [change.split('#')[0] for change in self.changes]
+        descs = [change.split('#')[1] for change in self.changes]
+
+        self.embed.set_image(url=images[self.index - 1])
+        self.embed.description = f"<t:{descs[self.index - 1]}:R>"
+        self.embed.set_footer(text=f"page {self.index}/{self.total_pages}")
+        self.update_buttons()
+        await reply.edit(embed=self.embed, view=self)
+
+    def update_buttons(self):
+        self.children[0].disabled = bool(self.index == 1)
+        self.children[1].disabled = bool(self.index == 1)
+        self.children[2].disabled = bool(self.index == self.total_pages)
+        self.children[3].disabled = bool(self.index == self.total_pages)
+
+    async def start(self):
+
+        images = [change.split('#')[0] for change in self.changes]
+        descs = [change.split('#')[1] for change in self.changes]
+
+        self.embed.description = f"<t:{descs[0]}:R>"
+        self.embed.set_image(url=images[0])
+        self.embed.set_footer(text=f"page 1/{self.total_pages}")
 
         if self.total_pages == 1:
             self.reply = await self.ctx.send(embed=self.embed)

@@ -223,8 +223,7 @@ class Fun(Cog):
             if m in su_list:
                 su_list.remove(m)
                 self.su_list.update({ ctx.guild.id: su_list })
-                emb.description = f"**speak** {m.mention} ."
-                await ctx.send(embed=emb)
+                await ctx.send(f"speak {m.mention}")
             else:
                 su_list.append(m)
                 self.su_list.update({ ctx.guild.id: su_list })
@@ -285,10 +284,8 @@ class Fun(Cog):
                 emb.description = f"{m.mention} is not in **su-list** ."
             else:
                 su_list.remove(m)
-                emb.description = f"**speak** {m.mention} ."
-                
-            self.su_list.update({ ctx.channel.id: su_list })
-            await ctx.send(embed=emb)
+                self.su_list.update({ ctx.channel.id: su_list })
+                await ctx.send(f"speak {m.mention}")
 
     @stfu_remove.command(name="all", description="removes **all** users from su-list .")
     @guild_only()

@@ -184,15 +184,18 @@ async def check_disabled(ctx):
 
 @bot.check
 async def check_whitelist(ctx):
-    cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
-    if ctx.guild.id in bot.whitelist.keys() and str(cmd_name) in bot.whitelist[ctx.guild.id]["commands"]:
-        print('hell yea')
-        if str(ctx.author.id) in bot.whitelist[ctx.guild.id]["users"]:
-            return True
-        else:
-            return False
-    else:
+    if not hasattr(ctx, "guild"):
         return True
+    else:
+        cmd_name = ctx.command.root_parent if ctx.command.root_parent else ctx.command.name
+        if ctx.guild.id in bot.whitelist.keys() and str(cmd_name) in bot.whitelist[ctx.guild.id]["commands"]:
+            print('hell yea')
+            if str(ctx.author.id) in bot.whitelist[ctx.guild.id]["users"]:
+                return True
+            else:
+                return False
+        else:
+            return True
 
 @bot.check
 async def check_allowed(ctx):
@@ -207,6 +210,16 @@ async def clear_nhistory(ctx):
         await ctx.send(embed=emb)
     else:
         await ClearNamesConfirmation(ctx).start()
+
+@bot.command(name="clearavatars", aliases=['cavatars'], description="clear your avatar history .")
+async def clear_nhistory(ctx):
+    emb = Embed(color=0x2b2d31)
+    check = MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("avatarhistory").find_one({ "user_id": str(ctx.author.id) })
+    if not check:
+        emb.description = f"{ctx.author.mention}: your **avatar history** is already **cleared** ."
+        await ctx.send(embed=emb)
+    else:
+        await ClearAvatarsConfirmation(ctx).start()
 
 @bot.command(name="blacklist", aliases=['bl'], description="blacklist user from using the bot .")
 @bot_owner()
@@ -362,6 +375,42 @@ class ClearNamesConfirmation(View):
 
     async def on_timeout(self):
         self.emb.description = f"{self.ctx.author.mention}: cancelled **name history clearing** ."
+        await self.message.edit(embed=self.emb, view=None)
+
+class ClearAvatarsConfirmation(View):
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.emb = Embed(color=0x2b2d31)
+        self.message = None
+        super().__init__(timeout=15)
+
+    async def interaction_check(self, intr: Interaction) -> bool:
+        if intr.user == self.ctx.author:
+            return True
+        else:
+            emb = Embed(color=0x2b2d31, description=f"{intr.user.mention}: you are not the **author** of this command .")
+            await intr.response.send_message(embed=emb, ephemeral=True)
+            return False
+
+    async def start(self):
+        self.emb.description = f"{self.ctx.author.mention}: are you sure you want to **clear** your **avatar history** ?"
+        self.message = await self.ctx.send(embed=self.emb, view=self)
+
+    @button(emoji='<:check:1256405259442716903>', style=ButtonStyle.gray)
+    async def first(self, intr: Interaction, button: Button):
+        await intr.response.defer()
+        MongoClient(os.environ["MONGO_URI"]).get_database("info").get_collection("avatarhistory").find_one_and_delete({ "user_id": str(intr.user.id) })
+        self.emb.description = f"{intr.user.mention}: **cleared** your **avatar history** ."
+        await self.message.edit(embed=self.emb, view=None)
+
+    @button(emoji='<:cancel:1256397856995283035>', style=ButtonStyle.red)
+    async def cancel(self, intr: Interaction, button: Button):
+        await intr.response.defer()
+        self.emb.description = f"{intr.user.mention}: cancelled **avatar history clearing** ."
+        await self.message.edit(embed=self.emb, view=None)
+
+    async def on_timeout(self):
+        self.emb.description = f"{self.ctx.author.mention}: cancelled **avatar history clearing** ."
         await self.message.edit(embed=self.emb, view=None)
 
 keep_alive()
