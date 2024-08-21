@@ -34,16 +34,16 @@ class Info(Cog):
             imgur_client = ImgurClient(os.environ["IMGUR_ID"], os.environ["IMGUR_SECRET"])
 
             config = {
-                'name': f"{new.display_avatar.key}",
-                'title': f"{new.display_avatar.key}",
+                'name': f"{after.display_avatar.key}",
+                'title': f"{after.display_avatar.key}",
                 'description': "grave bot : avatar history"
             }
 
             res = imgur_client.upload_from_url(after.display_avatar.url,config=config)
             if user_avh:
-                avh_array = check['avatar_history']
+                avh_array = user_avh['avatar_history']
                 avh_array.insert(0, f"{res['link']}#{int(time.time())}")
-                av_history_db.find_one_and_update({ "user_id": user_id }, { '$set': { "avatar_history": arr } })
+                av_history_db.find_one_and_update({ "user_id": str(after.id) }, { '$set': { "avatar_history": avh_array } })
             else:
                 av_history_db.insert_one({ "user_id": str(after.id), "avatar_history": [f"{res['link']}#{int(time.time())}"] })
 
@@ -322,11 +322,11 @@ class Info(Cog):
 
         check = self.mongo.get_collection("avatarhistory").find_one({ "user_id": str(u.id) })
 
-        if user_avh:
+        if check:
             emb.set_author(name=f"{u.name}'s avatar history :")
-            await AvatarHistory(ctx, emb, user_avh["avatar_history"]).start()
+            await AvatarHistory(ctx, emb, check["avatar_history"]).start()
         else:
-            emb.description = f"{u.mention} does not have any **name history** ."
+            emb.description = f"{u.mention} does not have any **avatar history** ."
             await ctx.send(embed=emb)
         
 class Buttons(View):
@@ -531,6 +531,8 @@ class AvatarHistory(View):
         if self.total_pages == 1:
             self.reply = await self.ctx.send(embed=self.embed)
         else:
+            self.children[0].disabled = bool(self.index == 1)
+            self.children[1].disabled = bool(self.index == 1)
             self.reply = await self.ctx.send(embed=self.embed, view=self)
 
     @button(emoji='<:skipleft:1256399619361869864>', style=ButtonStyle.gray)
